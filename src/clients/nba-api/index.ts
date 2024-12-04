@@ -2,6 +2,8 @@ import { type Response, fetch as undiciFetch } from "undici";
 import { getProxyAgent } from "./proxy";
 import allTeams from "./teams.json";
 import {
+  LeagueWideShotChartParams,
+  LeagueWideShotChartResponse,
   type GameBoxScoreParams,
   type GameBoxScoreResponse,
   type GameRotationParams,
@@ -55,7 +57,6 @@ class NBA_API_Client {
 
   private async fetch(endpoint: string) {
     if (env.NODE_ENV === "production") {
-      console.log("Using undiciFetch");
       let proxy = getProxyAgent();
       let res: Response;
       while (true) {
@@ -74,7 +75,6 @@ class NBA_API_Client {
       const data = await res.json();
       return data;
     } else {
-      console.log("Using fetch");
       const res = await fetch(`${this.baseUrl}${endpoint}`, {
         headers: this.headers,
       });
@@ -253,6 +253,20 @@ class NBA_API_Client {
       Array<ShotChartDetailResponse["resultSets"][number]["name"]>,
       Array<ShotChartDetailResponse["resultSets"][number]["headers"]>,
       ShotChartDetailResponse["resultSets"][number]["rowSet"][number][number]
+    >(data);
+  }
+
+  async getLeagueWideShotChart(params: LeagueWideShotChartParams) {
+    const queryString = new URLSearchParams(params).toString();
+    const data = (await this.fetch(
+      `/stats/shotchartleaguewide?${queryString}`,
+    )) as LeagueWideShotChartResponse;
+    return this.parseResponse<
+      LeagueWideShotChartResponse["resource"],
+      LeagueWideShotChartResponse["parameters"],
+      Array<LeagueWideShotChartResponse["resultSets"][number]["name"]>,
+      Array<LeagueWideShotChartResponse["resultSets"][number]["headers"]>,
+      LeagueWideShotChartResponse["resultSets"][number]["rowSet"][number][number]
     >(data);
   }
 

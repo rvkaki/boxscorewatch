@@ -741,6 +741,29 @@ export type ShotChartDetailResponse = NBA_API_Response<
   string | number
 >;
 
+export type LeagueWideShotChartParams = {
+  LeagueID: LeagueID;
+  Season: Season;
+};
+
+export type LeagueWideShotChartResponse = NBA_API_Response<
+  "shotchartleaguewide",
+  LeagueWideShotChartParams,
+  ["League_Wide"],
+  [
+    [
+      "GRID_TYPE",
+      "SHOT_ZONE_BASIC",
+      "SHOT_ZONE_AREA",
+      "SHOT_ZONE_RANGE",
+      "FGA",
+      "FGM",
+      "FG_PCT",
+    ],
+  ],
+  string | number
+>;
+
 export type PlayByBlayParams = {
   GameID: string;
   StartPeriod: string;

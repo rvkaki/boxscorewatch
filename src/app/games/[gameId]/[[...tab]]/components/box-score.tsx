@@ -1,6 +1,7 @@
+/* eslint-disable @typescript-eslint/no-unsafe-argument */
 import { StatKeyToShortLabel } from "~/lib/consts";
 import { cn } from "~/lib/utils";
-import { type GameData } from "~/server/db/types";
+import { type DBGame } from "~/server/db/types";
 import { api } from "~/trpc/server";
 
 const keysToIgnore = [
@@ -12,22 +13,26 @@ const keysToIgnore = [
   "GAME_ID",
 ] as const;
 
-export default async function BoxScore({ game }: { game: GameData }) {
-  const { awayTeam, homeTeam } = game;
-  const homeTeamId = homeTeam.stats.TEAM_ID;
-  const awayTeamId = awayTeam.stats.TEAM_ID;
+export default async function BoxScore({ game }: { game: DBGame }) {
+  const gameStats = await api.games.getGameStats({ gameId: game.GAME_ID });
 
   const homeTeamAverages = await api.teams.getSeasonAveragesById({
-    teamId: homeTeamId.toString(),
+    teamId: game.HOME_TEAM_ID.toString(),
   });
   const awayTeamAverages = await api.teams.getSeasonAveragesById({
-    teamId: awayTeamId.toString(),
+    teamId: game.AWAY_TEAM_ID.toString(),
   });
 
-  const statKeys = Object.keys(homeTeam.stats).filter(
+  const homeTeam = gameStats.find((s) => s.TEAM_ID === game.HOME_TEAM_ID)!;
+  const awayTeam = gameStats.find((s) => s.TEAM_ID === game.AWAY_TEAM_ID)!;
+
+  const statKeys = Object.keys(homeTeam.teamStats).filter(
     (k) =>
       !keysToIgnore.includes(k as unknown as (typeof keysToIgnore)[number]),
-  ) as Exclude<keyof typeof homeTeam.stats, (typeof keysToIgnore)[number]>[];
+  ) as Exclude<
+    keyof typeof homeTeam.teamStats,
+    (typeof keysToIgnore)[number]
+  >[];
 
   return (
     <div className="flex w-full flex-col justify-end gap-4 py-8">
@@ -52,13 +57,13 @@ export default async function BoxScore({ game }: { game: GameData }) {
         ))}
 
         <p className="flex items-center justify-center border-b border-neutral-800">
-          {homeTeam.stats.TEAM_ABBREVIATION}
+          {game.HOME_TEAM_ABBREVIATION}
         </p>
 
         {statKeys.map((key, i) => {
-          const value = homeTeam.stats[key];
+          const value = homeTeam.teamStats[key];
           let strValue: string | number = value;
-          const betterThanOpponent = value > awayTeam.stats[key];
+          const betterThanOpponent = value > awayTeam.teamStats[key];
           if (key === "FG_PCT" || key === "FG3_PCT" || key === "FT_PCT") {
             strValue = (value * 100).toFixed(1) + "%";
           }
@@ -90,13 +95,13 @@ export default async function BoxScore({ game }: { game: GameData }) {
         })}
 
         <p className="flex items-center justify-center">
-          {awayTeam.stats.TEAM_ABBREVIATION}
+          {game.AWAY_TEAM_ABBREVIATION}
         </p>
 
         {statKeys.map((key, i) => {
-          const value: string | number = awayTeam.stats[key];
+          const value: string | number = awayTeam.teamStats[key];
           let strValue: string | number = value;
-          const betterThanOpponent = value > homeTeam.stats[key];
+          const betterThanOpponent = value > homeTeam.teamStats[key];
           if (key === "FG_PCT" || key === "FG3_PCT" || key === "FT_PCT") {
             strValue = (value * 100).toFixed(1) + "%";
           }

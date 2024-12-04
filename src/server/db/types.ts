@@ -146,24 +146,39 @@ type GameRotation = {
   USG_PCT: number;
 };
 
-export type GameData = {
+export type DBPlayByPlay = {
+  GAME_ID: string;
+  playByPlay: PlayByPlay[];
+};
+
+export type DBGameStats = {
+  GAME_ID: string;
+  TEAM_ID: number;
+  teamStats: GameTeamStats;
+  playerStats: GamePlayerStats[];
+  startersStats: GameStarterBenchStats<"Starters">;
+  benchStats: GameStarterBenchStats<"Bench">;
+};
+
+export type DBGameRotations = {
+  GAME_ID: string;
+  TEAM_ID: number;
+  rotations: GameRotation[];
+};
+
+export type DBGame = {
   GAME_ID: string;
   GAME_DATE: string;
-  playbyplay: PlayByPlay[];
-  homeTeam: {
-    stats: GameTeamStats;
-    playerStats: GamePlayerStats[];
-    startersStats: GameStarterBenchStats<"Starters">;
-    benchStats: GameStarterBenchStats<"Bench">;
-    rotations: GameRotation[];
-  };
-  awayTeam: {
-    stats: GameTeamStats;
-    playerStats: GamePlayerStats[];
-    startersStats: GameStarterBenchStats<"Starters">;
-    benchStats: GameStarterBenchStats<"Bench">;
-    rotations: GameRotation[];
-  };
+  AWAY_TEAM_ID: number;
+  AWAY_TEAM_NAME: string;
+  AWAY_TEAM_CITY: string;
+  AWAY_TEAM_ABBREVIATION: string;
+  AWAY_TEAM_PTS: number;
+  HOME_TEAM_ID: number;
+  HOME_TEAM_NAME: string;
+  HOME_TEAM_CITY: string;
+  HOME_TEAM_ABBREVIATION: string;
+  HOME_TEAM_PTS: number;
 };
 
 export type TeamSeasonAverages = {
@@ -223,4 +238,58 @@ export type TeamSeasonAverages = {
   PTS_RANK: number;
   PLUS_MINUS_RANK: number;
   TEAM_ID: string;
+};
+
+export type ShotZone =
+  | "Restricted Area"
+  | "In The Paint (Non-RA)"
+  | "Mid-Range"
+  | "Left Corner 3"
+  | "Right Corner 3"
+  | "Above the Break 3";
+
+type TeamShotChart = {
+  GRID_TYPE: "Shot Chart Detail";
+  GAME_ID: number;
+  GAME_EVENT_ID: number;
+  PLAYER_ID: number;
+  PLAYER_NAME: string;
+  TEAM_ID: number;
+  TEAM_NAME: string;
+  PERIOD: number;
+  MINUTES_REMAINING: number;
+  SECONDS_REMAINING: number;
+  EVENT_TYPE: string;
+  ACTION_TYPE: string;
+  SHOT_TYPE: string;
+  SHOT_ZONE_BASIC: ShotZone;
+  SHOT_ZONE_AREA: string;
+  SHOT_ZONE_RANGE: string;
+  SHOT_DISTANCE: number;
+  LOC_X: number;
+  LOC_Y: number;
+  SHOT_ATTEMPTED_FLAG: 0 | 1;
+  SHOT_MADE_FLAG: 0 | 1;
+  GAME_DATE: number;
+  HTM: string;
+  VTM: string;
+};
+
+export type DBGameShotChart = {
+  GAME_ID: string;
+  shotCharts: Record<string, TeamShotChart[]>;
+};
+
+type LeagueWideShotChart = {
+  GRID_TYPE: "League Averages";
+  SHOT_ZONE_BASIC: ShotZone;
+  SHOT_ZONE_AREA: string;
+  SHOT_ZONE_RANGE: string;
+  FGA: number;
+  FGM: number;
+  FG_PCT: number;
+};
+
+export type DBLeagueWideShotChart = {
+  League_Wide: LeagueWideShotChart[];
 };

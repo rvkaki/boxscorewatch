@@ -6,9 +6,9 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
 import { getTeamLogoUrl } from "~/lib/utils";
-import { type GameData } from "~/server/db/types";
 import { api } from "~/trpc/server";
 import BoxScore from "./components/box-score";
+import GameCharts from "./components/game-charts";
 
 export default async function GamePage({
   params,
@@ -16,14 +16,12 @@ export default async function GamePage({
   params: Promise<{ gameId: string; tab?: string[] }>;
 }) {
   const { gameId, tab } = await params;
-  const game = (await api.games.getById({ gameId })) as GameData | null;
+  const game = await api.games.getById({ gameId });
   if (!game) {
     return notFound();
   }
 
   const activeTab = tab?.[0] ?? "box-score";
-
-  const { awayTeam, homeTeam, GAME_DATE } = game;
 
   return (
     <div className="flex w-full max-w-7xl flex-1 flex-col items-center gap-12 py-12 text-neutral-200">
@@ -31,34 +29,34 @@ export default async function GamePage({
         <div
           className="flex flex-row items-center gap-4"
           style={{
-            opacity: awayTeam.stats.PTS > homeTeam.stats.PTS ? 1 : 0.5,
+            opacity: game.AWAY_TEAM_PTS > game.HOME_TEAM_PTS ? 1 : 0.5,
           }}
         >
           <Image
-            src={getTeamLogoUrl(awayTeam.stats.TEAM_ID)}
-            alt={`${awayTeam.stats.TEAM_NAME} logo`}
+            src={getTeamLogoUrl(game.AWAY_TEAM_ID)}
+            alt={`${game.AWAY_TEAM_NAME} logo`}
             width={100}
             height={100}
             className="cursor-pointer"
           />
-          <p className="text-3xl font-bold">{awayTeam.stats.PTS}</p>
+          <p className="text-3xl font-bold">{game.AWAY_TEAM_PTS}</p>
         </div>
         <div className="flex flex-col items-center">
           <p className="text-md text-neutral-400">Finished</p>{" "}
           <p className="text-lg font-bold">
-            {format(new Date(GAME_DATE), "E PP")}
+            {format(new Date(game.GAME_DATE), "E PP")}
           </p>
         </div>
         <div
           className="flex flex-row items-center gap-4"
           style={{
-            opacity: homeTeam.stats.PTS > awayTeam.stats.PTS ? 1 : 0.5,
+            opacity: game.HOME_TEAM_PTS > game.AWAY_TEAM_PTS ? 1 : 0.5,
           }}
         >
-          <p className="text-3xl font-bold">{homeTeam.stats.PTS}</p>
+          <p className="text-3xl font-bold">{game.HOME_TEAM_PTS}</p>
           <Image
-            src={getTeamLogoUrl(homeTeam.stats.TEAM_ID)}
-            alt={`${homeTeam.stats.TEAM_NAME} logo`}
+            src={getTeamLogoUrl(game.HOME_TEAM_ID)}
+            alt={`${game.HOME_TEAM_NAME} logo`}
             width={100}
             height={100}
             className="cursor-pointer"
@@ -81,6 +79,11 @@ export default async function GamePage({
 
         <TabsContent value="box-score">
           <BoxScore game={game} />
+          <GameCharts
+            gameId={gameId}
+            homeTeamId={game.HOME_TEAM_ID.toString()}
+            awayTeamId={game.AWAY_TEAM_ID.toString()}
+          />
         </TabsContent>
       </Tabs>
     </div>

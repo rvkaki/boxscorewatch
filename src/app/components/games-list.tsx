@@ -23,25 +23,17 @@ export default async function GamesList() {
           <p className="text-lg font-bold">{format(new Date(date), "E PP")}</p>
           <div className="grid w-full grid-cols-4 gap-4">
             {games.map((game) => {
-              const { homeTeam, awayTeam, GAME_DATE, GAME_ID } =
-                game as unknown as Record<
-                  "homeTeam" | "awayTeam",
-                  Record<string, Record<string, number | string>>
-                > & { GAME_DATE: string; GAME_ID: string };
+              const gameDate = new Date(game.GAME_DATE);
 
-              const gameDate = new Date(GAME_DATE);
+              const isHomeWin = game.HOME_TEAM_PTS > game.AWAY_TEAM_PTS;
 
-              const isHomeWin =
-                (homeTeam.stats!.PTS as number) >
-                (awayTeam.stats!.PTS as number);
-
-              const homeTeamId = homeTeam.stats!.TEAM_ID as string;
-              const awayTeamId = awayTeam.stats!.TEAM_ID as string;
+              const homeTeamId = game.HOME_TEAM_ID;
+              const awayTeamId = game.AWAY_TEAM_ID;
 
               return (
                 <Link
-                  key={GAME_ID}
-                  href={`/games/${GAME_ID}`}
+                  key={game.GAME_ID}
+                  href={`/games/${game.GAME_ID}`}
                   className="flex cursor-pointer flex-col items-center justify-center rounded-md border border-neutral-500 p-4 hover:border-amber-500 hover:bg-amber-500 hover:bg-opacity-[0.03]"
                 >
                   <span className="text-sm">{gameDate.toDateString()}</span>
@@ -49,14 +41,12 @@ export default async function GamesList() {
                     <div className="flex flex-col items-center">
                       <Image
                         src={getTeamLogoUrl(awayTeamId)}
-                        alt={
-                          (awayTeam.stats!.TEAM_NAME as string) ?? "Team Logo"
-                        }
+                        alt={game.AWAY_TEAM_NAME ?? "Team Logo"}
                         width={36}
                         height={36}
                       />
                       <span className="font-semibold">
-                        {awayTeam.stats!.TEAM_ABBREVIATION}
+                        {game.AWAY_TEAM_ABBREVIATION}
                       </span>
                       <span className="text-xs text-neutral-400">
                         {teamsById[awayTeamId]?.W} - {teamsById[awayTeamId]?.L}
@@ -66,26 +56,24 @@ export default async function GamesList() {
                       <span
                         className={`${isHomeWin ? "text-neutral-400" : "text-current"}`}
                       >
-                        {awayTeam.stats!.PTS}
+                        {game.AWAY_TEAM_PTS}
                       </span>
                       <span>-</span>
                       <span
                         className={`${isHomeWin ? "text-current" : "text-neutral-400"}`}
                       >
-                        {homeTeam.stats!.PTS}
+                        {game.HOME_TEAM_PTS}
                       </span>
                     </div>
                     <div className="flex flex-col items-center">
                       <Image
                         src={getTeamLogoUrl(homeTeamId)}
-                        alt={
-                          (homeTeam.stats!.TEAM_NAME as string) ?? "Team Logo"
-                        }
+                        alt={game.HOME_TEAM_NAME ?? "Team Logo"}
                         width={36}
                         height={36}
                       />
                       <span className="font-semibold">
-                        {homeTeam.stats!.TEAM_ABBREVIATION}
+                        {game.HOME_TEAM_ABBREVIATION}
                       </span>
                       <span className="text-xs text-neutral-400">
                         {teamsById[homeTeamId]?.W} - {teamsById[homeTeamId]?.L}

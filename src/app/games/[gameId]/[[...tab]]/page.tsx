@@ -9,6 +9,7 @@ import { getTeamLogoUrl } from "~/lib/utils";
 import { api } from "~/trpc/server";
 import BoxScore from "./components/box-score";
 import GameCharts from "./components/game-charts";
+import RunsChart from "./components/runs-chart";
 
 export default async function GamePage({
   params,
@@ -84,6 +85,9 @@ export default async function GamePage({
             homeTeamId={game.HOME_TEAM_ID.toString()}
             awayTeamId={game.AWAY_TEAM_ID.toString()}
           />
+        </TabsContent>
+        <TabsContent value="play-runs">
+          <RunsChart gameId={gameId} />
         </TabsContent>
       </Tabs>
     </div>

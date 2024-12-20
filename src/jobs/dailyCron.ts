@@ -122,6 +122,11 @@ async function processLeagueWideShotChart() {
     await client
       .db(CUR_SEASON)
       .collection("leagueWideShotChart")
+      .deleteMany({});
+
+    await client
+      .db(CUR_SEASON)
+      .collection("leagueWideShotChart")
       .insertOne(shotChart);
   }
 }

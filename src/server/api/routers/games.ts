@@ -1,12 +1,14 @@
+import { z } from "zod";
+import { CUR_SEASON } from "~/lib/consts";
+import findRuns from "~/lib/findRuns";
 import { createTRPCRouter, publicProcedure } from "~/server/api/trpc";
 import client from "~/server/db";
-import { CUR_SEASON } from "~/lib/consts";
-import { z } from "zod";
 import {
-  DBGameStats,
-  DBLeagueWideShotChart,
   type DBGame,
   type DBGameShotChart,
+  type DBGameStats,
+  type DBLeagueWideShotChart,
+  type DBPlayByPlay,
 } from "~/server/db/types";
 
 export const gamesRouter = createTRPCRouter({
@@ -70,4 +72,20 @@ export const gamesRouter = createTRPCRouter({
       .collection("leagueWideShotChart")
       .findOne()) as DBLeagueWideShotChart | null;
   }),
+  getGameRuns: publicProcedure
+    .input(z.object({ gameId: z.string() }))
+    .query(async ({ input }) => {
+      const playbyplay = (await client
+        .db(CUR_SEASON)
+        .collection("playbyplay")
+        .findOne({
+          GAME_ID: input.gameId,
+        })) as DBPlayByPlay | null;
+
+      if (!playbyplay) {
+        return [];
+      }
+
+      return findRuns(playbyplay.playbyplay);
+    }),
 });

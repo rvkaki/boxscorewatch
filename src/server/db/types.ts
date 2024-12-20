@@ -5,7 +5,7 @@ type PlayVideo = {
   subtitle: string;
 };
 
-type PlayByPlay = {
+export type PlayByPlay = {
   GAME_ID: string;
   EVENTNUM: number;
   EVENTMSGTYPE: number;
@@ -148,7 +148,7 @@ type GameRotation = {
 
 export type DBPlayByPlay = {
   GAME_ID: string;
-  playByPlay: PlayByPlay[];
+  playbyplay: PlayByPlay[];
 };
 
 export type DBGameStats = {

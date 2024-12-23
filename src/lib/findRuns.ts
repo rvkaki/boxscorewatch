@@ -205,7 +205,7 @@ function findRuns(plays: PlayByPlay[]): Run[] {
     runs.push(currentRun);
   }
 
-  return runs;
+  return runs.filter((run) => run.runScore - run.opponentScore > 4);
 }
 
 export default findRuns;

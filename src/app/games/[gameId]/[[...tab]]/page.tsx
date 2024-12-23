@@ -86,8 +86,12 @@ export default async function GamePage({
             awayTeamId={game.AWAY_TEAM_ID.toString()}
           />
         </TabsContent>
-        <TabsContent value="play-runs">
-          <RunsChart gameId={gameId} />
+        <TabsContent value="runs">
+          <RunsChart
+            gameId={gameId}
+            homeTeamAbv={game.HOME_TEAM_ABBREVIATION}
+            awayTeamAbv={game.AWAY_TEAM_ABBREVIATION}
+          />
         </TabsContent>
       </Tabs>
     </div>

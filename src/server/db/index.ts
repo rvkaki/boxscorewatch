@@ -1,4 +1,4 @@
-import { MongoClient, ServerApiVersion } from "mongodb";
+import { MongoClient, MongoClientOptions, ServerApiVersion } from "mongodb";
 import { env } from "~/env";
 
 if (!env.MONGO_URI) {
@@ -6,7 +6,7 @@ if (!env.MONGO_URI) {
 }
 
 const uri = env.MONGO_URI;
-const options = {
+const options: MongoClientOptions = {
   serverApi: {
     version: ServerApiVersion.v1,
     strict: true,

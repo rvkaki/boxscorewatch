@@ -88,4 +88,16 @@ export const gamesRouter = createTRPCRouter({
 
       return findRuns(playbyplay.playbyplay);
     }),
+  getPlayByPlay: publicProcedure
+    .input(z.object({ gameId: z.string() }))
+    .query(async ({ input }) => {
+      const res = (await client
+        .db(CUR_SEASON)
+        .collection("playbyplay")
+        .findOne({
+          GAME_ID: input.gameId,
+        })) as DBPlayByPlay | null;
+
+      return res?.playbyplay ?? [];
+    }),
 });

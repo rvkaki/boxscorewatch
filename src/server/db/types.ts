@@ -238,6 +238,7 @@ export type TeamSeasonAverages = {
   PTS_RANK: number;
   PLUS_MINUS_RANK: number;
   TEAM_ID: string;
+  standardDeviations: Record<string, { value: number; sq_sum: number }>;
 };
 
 export type ShotZone =

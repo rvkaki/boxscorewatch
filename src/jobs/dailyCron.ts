@@ -1,9 +1,9 @@
 import { add, differenceInDays, format } from "date-fns";
 import { nbaApi } from "~/clients/nba-api";
-import { CUR_SEASON } from "~/lib/consts";
+import { CUR_SEASON, StatKeyToShortLabel } from "~/lib/consts";
 import { sleep } from "~/lib/utils";
 import client from "~/server/db";
-import { processTeamSeasonAverages } from "./processTeamSeasonAverages";
+import { type DBGameStats, type TeamSeasonAverages } from "~/server/db/types";
 
 export async function getBoxScore(gameId: string) {
   try {
@@ -129,6 +129,65 @@ async function processLeagueWideShotChart() {
       .collection("leagueWideShotChart")
       .insertOne(shotChart);
   }
+}
+
+async function recalculateStandardDeviationsAndAverages(
+  teamId: number | string,
+  gameStats: DBGameStats["teamStats"],
+) {
+  const teamAverages = (await client
+    .db(CUR_SEASON)
+    .collection("teamSeasonAverages")
+    .findOne({
+      TEAM_ID: teamId.toString(),
+    })) as TeamSeasonAverages | null;
+
+  if (!teamAverages) {
+    console.log("No team averages found for", teamId);
+    return;
+  }
+
+  const statKeys = (
+    Object.keys(StatKeyToShortLabel) as (keyof typeof StatKeyToShortLabel)[]
+  ).filter((k) => k !== "MIN");
+
+  const numGames = teamAverages.GP + 1;
+  const updatedStandardDeviations: Record<
+    string,
+    { value: number; sq_sum: number }
+  > = {};
+  const updatedAverages: Record<string, number> = {};
+
+  for (const key of statKeys) {
+    const gameStat = gameStats[key];
+    const teamAvg = teamAverages[key === "TO" ? "TOV" : key];
+    const sq_sum = teamAverages.standardDeviations[key]!.sq_sum;
+
+    const delta = gameStat - teamAvg;
+    const updatedAvg = teamAvg + delta / numGames;
+    const delta2 = gameStat - updatedAvg;
+    const updatedSqSum = sq_sum + delta * delta2;
+    const updatedStdDev = Math.sqrt(updatedSqSum / numGames);
+
+    updatedStandardDeviations[key] = {
+      value: updatedStdDev,
+      sq_sum: updatedSqSum,
+    };
+    updatedAverages[key === "TO" ? "TOV" : key] = updatedAvg;
+  }
+
+  await client
+    .db(CUR_SEASON)
+    .collection("teamSeasonAverages")
+    .updateOne(
+      { TEAM_ID: teamId.toString() },
+      {
+        $set: {
+          standardDeviations: updatedStandardDeviations,
+          ...updatedAverages,
+        },
+      },
+    );
 }
 
 async function processGames() {
@@ -329,6 +388,18 @@ async function processGames() {
       HOME_TEAM_PTS: homeTeamStats!.PTS,
     };
 
+    await recalculateStandardDeviationsAndAverages(
+      homeTeamStats!.TEAM_ID,
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-explicit-any
+      homeTeamStats! as any,
+    );
+
+    await recalculateStandardDeviationsAndAverages(
+      awayTeamStats!.TEAM_ID,
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-explicit-any
+      awayTeamStats! as any,
+    );
+
     // Store the game in the database
     await client.db(CUR_SEASON).collection("games").insertOne(gameData);
 
@@ -341,7 +412,7 @@ async function processGames() {
 
 async function run() {
   await processGames();
-  await processTeamSeasonAverages();
+  // await processTeamSeasonAverages();
   await processLeagueWideShotChart();
   process.exit(0);
 }

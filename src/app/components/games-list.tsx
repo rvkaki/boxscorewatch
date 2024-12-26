@@ -35,6 +35,7 @@ export default async function GamesList() {
                   key={game.GAME_ID}
                   href={`/games/${game.GAME_ID}`}
                   className="flex cursor-pointer flex-col items-center justify-center rounded-md border border-neutral-500 p-4 hover:border-amber-500 hover:bg-amber-500 hover:bg-opacity-[0.03]"
+                  prefetch={false}
                 >
                   <span className="text-sm">{gameDate.toDateString()}</span>
                   <div className="flex flex-row items-center gap-6">

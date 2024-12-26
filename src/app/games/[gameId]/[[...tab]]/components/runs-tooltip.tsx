@@ -2,17 +2,20 @@
 
 import Image from "next/image";
 import { useState } from "react";
-import { TeamTricodeToColor } from "~/lib/consts";
+import colors from "tailwindcss/colors";
 import { getPlayerImageUrl, hexToBW } from "~/lib/utils";
 import { type RouterOutputs } from "~/trpc/react";
 
 export default function RunsTooltip({
   runs,
   playbyplay,
+  homeTeamAbv,
   chartDimensions,
 }: {
   runs: RouterOutputs["games"]["getGameRuns"];
   playbyplay: RouterOutputs["games"]["getPlayByPlay"];
+  homeTeamAbv: string;
+  awayTeamAbv: string;
   chartDimensions: {
     marginTop: number;
     marginRight: number;
@@ -60,16 +63,16 @@ export default function RunsTooltip({
   );
 
   const teamAbv = hoveredPlay?.PLAYER1_TEAM_ABBREVIATION;
-  const scoreColor = teamAbv ? TeamTricodeToColor[teamAbv] : "#000";
+  const scoreColor =
+    teamAbv === homeTeamAbv ? colors.amber[600] : colors.sky[600];
 
   const playScore = hoveredPlay?.SCORE?.split(" - ").map(Number);
   const playDescription =
     hoveredPlay?.HOMEDESCRIPTION ??
     hoveredPlay?.VISITORDESCRIPTION ??
     hoveredPlay?.NEUTRALDESCRIPTION;
-  const runColor = hoveredRun
-    ? TeamTricodeToColor[hoveredRun.teamAbbr]!
-    : "#000";
+  const runColor =
+    hoveredRun?.teamAbbr === homeTeamAbv ? colors.amber[600] : colors.sky[600];
 
   return (
     <div

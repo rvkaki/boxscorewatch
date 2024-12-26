@@ -33,9 +33,22 @@ export async function processTeamSeasonAverages() {
     }
   }
 
+  const std_dev = await client
+    .db(CUR_SEASON)
+    .collection("teamSeasonAverages")
+    .find()
+    .project({ TEAM_ID: 1, standardDeviations: 1 })
+    .toArray();
+
   await client.db(CUR_SEASON).collection("teamSeasonAverages").deleteMany({});
   return await client
     .db(CUR_SEASON)
     .collection("teamSeasonAverages")
-    .insertMany(rowsToStore);
+    .insertMany(
+      rowsToStore.map((row) => ({
+        ...row,
+        standardDeviations: std_dev.find((s) => s.TEAM_ID === row.TEAM_ID)
+          ?.standardDeviations,
+      })),
+    );
 }

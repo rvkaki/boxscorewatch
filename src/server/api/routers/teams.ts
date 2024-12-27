@@ -8,6 +8,13 @@ export const teamsRouter = createTRPCRouter({
   getAll: publicProcedure.query(async () => {
     return await client.db(CUR_SEASON).collection("teams").find().toArray();
   }),
+  getAllSeasonAverages: publicProcedure.query(async () => {
+    return await client
+      .db(CUR_SEASON)
+      .collection("teamSeasonAverages")
+      .find()
+      .toArray();
+  }),
   getSeasonAveragesById: publicProcedure
     .input(z.object({ teamId: z.string() }))
     .query(async ({ input }) => {

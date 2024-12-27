@@ -10,6 +10,7 @@ import { api } from "~/trpc/server";
 import BoxScore from "./components/box-score";
 import GameCharts from "./components/game-charts";
 import RunsChart from "./components/runs-chart";
+import RotationsChart from "./components/rotations-chart";
 
 export default async function GamePage({
   params,
@@ -76,6 +77,9 @@ export default async function GamePage({
           <TabsTrigger value="runs" asChild>
             <Link href={`/games/${gameId}/runs`}>Runs</Link>
           </TabsTrigger>
+          <TabsTrigger value="rotations" asChild>
+            <Link href={`/games/${gameId}/rotations`}>Rotations</Link>
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="box-score">
@@ -89,6 +93,15 @@ export default async function GamePage({
         <TabsContent value="runs">
           <RunsChart
             gameId={gameId}
+            homeTeamAbv={game.HOME_TEAM_ABBREVIATION}
+            awayTeamAbv={game.AWAY_TEAM_ABBREVIATION}
+          />
+        </TabsContent>
+        <TabsContent value="rotations">
+          <RotationsChart
+            gameId={gameId}
+            homeTeamId={game.HOME_TEAM_ID}
+            awayTeamId={game.AWAY_TEAM_ID}
             homeTeamAbv={game.HOME_TEAM_ABBREVIATION}
             awayTeamAbv={game.AWAY_TEAM_ABBREVIATION}
           />

@@ -5,6 +5,7 @@ import { createTRPCRouter, publicProcedure } from "~/server/api/trpc";
 import client from "~/server/db";
 import {
   type DBGame,
+  type DBGameRotations,
   type DBGameShotChart,
   type DBGameStats,
   type DBLeagueWideShotChart,
@@ -99,5 +100,15 @@ export const gamesRouter = createTRPCRouter({
         })) as DBPlayByPlay | null;
 
       return res?.playbyplay ?? [];
+    }),
+  getGameRotations: publicProcedure
+    .input(z.object({ gameId: z.string() }))
+    .query(async ({ input }) => {
+      return (await client
+        .db(CUR_SEASON)
+        .collection("gameRotations")
+        .find({ GAME_ID: input.gameId })
+        .project({ _id: 0 })
+        .toArray()) as unknown as [DBGameRotations, DBGameRotations];
     }),
 });

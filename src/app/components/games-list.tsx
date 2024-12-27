@@ -6,9 +6,15 @@ import { api } from "~/trpc/server";
 
 export default async function GamesList() {
   const teams = await api.teams.getAll();
+  const seasonAverages = await api.teams.getAllSeasonAverages();
   const teamsById = teams.reduce(
     (acc, team) => {
       acc[team.TEAM_ID] = team;
+      const teamAvg = seasonAverages.find(
+        (avg) => avg.TEAM_ID === team.TEAM_ID.toString(),
+      );
+      acc[team.TEAM_ID]!.W = teamAvg?.W;
+      acc[team.TEAM_ID]!.L = teamAvg?.L;
       return acc;
     },
     {} as Record<string, (typeof teams)[0]>,

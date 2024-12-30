@@ -43,3 +43,12 @@ export function hexToBW(color: string) {
   );
   return luminance > 0.5 ? "#14141f" : "#ffffff";
 }
+
+export const COURT_WIDTH = 500;
+export const COURT_HEIGHT = 470;
+
+export function numberToOrdinal(n: number) {
+  const s = ["th", "st", "nd", "rd"],
+    v = n % 100;
+  return n + (s[(v - 20) % 10] ?? s[v] ?? s[0])!;
+}

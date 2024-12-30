@@ -157,7 +157,9 @@ export default function ShotsChart({
                   >
                     <div className="h-[2px] flex-1 bg-neutral-600" />
                     <p className="text-sm font-semibold text-neutral-400">
-                      {numberToOrdinal(shot.PERIOD)} Quarter
+                      {shot.PERIOD > 4
+                        ? `${numberToOrdinal(shot.PERIOD - 4)} Overtime`
+                        : `${numberToOrdinal(shot.PERIOD)} Quarter`}
                     </p>
                     <div className="h-[2px] flex-1 bg-neutral-600" />
                   </div>

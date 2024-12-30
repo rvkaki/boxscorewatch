@@ -90,28 +90,32 @@ export default async function RunsChart({
             transform: `translate(${marginLeft}px, ${marginTop}px)`,
           }}
         >
-          {quarterLimits.map((l, i) => (
-            <g key={i} className="overflow-visible font-medium text-gray-500">
-              <line
-                x1={`${xScale(l)}%`}
-                x2={`${xScale(l)}%`}
-                y1="0"
-                y2="100%"
-                stroke="currentColor"
-                strokeWidth="1"
-              />
-              <text
-                x={`${xScale(l)}%`}
-                y="102%"
-                alignmentBaseline="hanging"
-                textAnchor="middle"
-                className="text-xs"
-                fill="currentColor"
-              >
-                Q{Math.floor(playbyplayData[l]?.PERIOD ?? 0)}
-              </text>
-            </g>
-          ))}
+          {quarterLimits.map((l, i) => {
+            const quarter = playbyplayData[l]!.PERIOD;
+
+            return (
+              <g key={i} className="overflow-visible font-medium text-gray-500">
+                <line
+                  x1={`${xScale(l)}%`}
+                  x2={`${xScale(l)}%`}
+                  y1="0"
+                  y2="100%"
+                  stroke="currentColor"
+                  strokeWidth="1"
+                />
+                <text
+                  x={`${xScale(l)}%`}
+                  y="102%"
+                  alignmentBaseline="hanging"
+                  textAnchor="middle"
+                  className="text-xs"
+                  fill="currentColor"
+                >
+                  {quarter > 4 ? `${quarter - 4}OT` : `${quarter}Q`}
+                </text>
+              </g>
+            );
+          })}
         </svg>
 
         {/* Y axis */}

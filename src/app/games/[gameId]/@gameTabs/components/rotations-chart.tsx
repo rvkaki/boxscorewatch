@@ -32,6 +32,12 @@ export default async function RotationsChart({
   const homeRotations = rotations.find((r) => r.TEAM_ID === homeTeamId)!;
   const awayRotations = rotations.find((r) => r.TEAM_ID === awayTeamId)!;
 
+  let maxTime = 48 * 60 * 10;
+  const lastPeriod = playbyplay.at(-1)!.PERIOD;
+  if (lastPeriod > 4) {
+    maxTime += (lastPeriod - 4) * 5 * 60 * 10;
+  }
+
   const playerNames = [
     ...new Set(
       awayRotations.rotations
@@ -45,10 +51,7 @@ export default async function RotationsChart({
     ),
   ];
 
-  const xScale = d3
-    .scaleLinear()
-    .domain([0, 48 * 60 * 10])
-    .range([0, 100]);
+  const xScale = d3.scaleLinear().domain([0, maxTime]).range([0, 100]);
 
   const yScale = d3.scaleBand().domain(playerNames).range([0, 100]);
 
@@ -71,7 +74,7 @@ export default async function RotationsChart({
       );
 
       let currentTime = 0;
-      while (currentTime < 48 * 60 * 10) {
+      while (currentTime < maxTime) {
         const players = sortedRotations
           .filter(
             (r) =>
@@ -85,8 +88,15 @@ export default async function RotationsChart({
           const [minutes, seconds] = play.PCTIMESTRING.split(":").map(
             Number,
           ) as [number, number];
-          const qtrTime = 12 * 60 * 10 - (minutes * 60 * 10 + seconds * 10);
-          const elapsedTime = (play.PERIOD - 1) * 12 * 60 * 10 + qtrTime;
+          let qtrTime = 12 * 60 * 10 - (minutes * 60 * 10 + seconds * 10);
+          if (play.PERIOD > 4) {
+            qtrTime = 5 * 60 * 10 - (minutes * 60 * 10 + seconds * 10);
+          }
+          let elapsedTime = (play.PERIOD - 1) * 12 * 60 * 10 + qtrTime;
+          if (play.PERIOD > 4) {
+            elapsedTime =
+              48 * 60 * 10 + (play.PERIOD - 5) * 5 * 60 * 10 + qtrTime;
+          }
 
           return elapsedTime >= currentTime && elapsedTime <= endTime;
         });
@@ -179,7 +189,18 @@ export default async function RotationsChart({
             transform: `translate(${marginLeft}px, ${marginTop}px)`,
           }}
         >
-          {[0, 12, 24, 36, 48].map((m) => (
+          {[
+            0,
+            12,
+            24,
+            36,
+            48,
+            ...(playbyplay.at(-1)!.PERIOD > 4
+              ? new Array(playbyplay.at(-1)!.PERIOD - 4)
+                  .fill(0)
+                  .map((_, i) => 48 + (i + 1) * 5)
+              : []),
+          ].map((m) => (
             <g key={m} className="overflow-visible font-medium text-gray-500">
               <line
                 x1={`${xScale(m * 60 * 10)}%`}
@@ -262,8 +283,11 @@ export default async function RotationsChart({
             transform: `translate(${marginLeft}px, ${marginTop}px)`,
           }}
         >
-          {[...Array(48)].map((_, i) => (
-            <g key={i} className="overflow-visible font-medium text-neutral-400">
+          {[...Array(maxTime / 10 / 60)].map((_, i) => (
+            <g
+              key={i}
+              className="overflow-visible font-medium text-neutral-400"
+            >
               <line
                 x1={`${xScale(i * 60 * 10)}%`}
                 x2={`${xScale(i * 60 * 10)}%`}
@@ -280,8 +304,16 @@ export default async function RotationsChart({
             const [minutes, seconds] = timeout.PCTIMESTRING.split(":").map(
               Number,
             ) as [number, number];
-            const qtrTime = 12 * 60 * 10 - (minutes * 60 * 10 + seconds * 10);
-            const x = xScale((timeout.PERIOD - 1) * 12 * 60 * 10 + qtrTime);
+            let qtrTime = 12 * 60 * 10 - (minutes * 60 * 10 + seconds * 10);
+            if (timeout.PERIOD > 4) {
+              qtrTime = 5 * 60 * 10 - (minutes * 60 * 10 + seconds * 10);
+            }
+            let x = xScale((timeout.PERIOD - 1) * 12 * 60 * 10 + qtrTime);
+            if (timeout.PERIOD > 4) {
+              x = xScale(
+                48 * 60 * 10 + (timeout.PERIOD - 5) * 5 * 60 * 10 + qtrTime,
+              );
+            }
 
             const teamAbv =
               timeout.HOMEDESCRIPTION !== null

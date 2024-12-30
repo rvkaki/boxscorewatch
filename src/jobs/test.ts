@@ -2,13 +2,13 @@ import { writeFileSync } from "fs";
 import { CUR_SEASON, StatKeyToShortLabel } from "~/lib/consts";
 import client from "~/server/db";
 import {
-  DBPlayByPlay,
   type DBGameStats,
-  type TeamSeasonAverages
+  type DBPlayByPlay,
+  type TeamSeasonAverages,
 } from "~/server/db/types";
 import { getGameVideoDetails, getPlayByPlay } from "./dailyCron";
 
-async function calculateStandardDeviations() {
+export async function calculateStandardDeviations() {
   const teams = await client
     .db(CUR_SEASON)
     .collection("teams")
@@ -83,7 +83,7 @@ async function calculateStandardDeviations() {
   }
 }
 
-async function getMissingInfo() {
+export async function getMissingInfo() {
   const missingGames = {
     "0022400436": {
       playbyplay: true,
@@ -129,7 +129,7 @@ async function getMissingInfo() {
   }
 }
 
-async function test() {
+export async function test() {
   const playbyplayEntries = (await client
     .db(CUR_SEASON)
     .collection("playbyplay")

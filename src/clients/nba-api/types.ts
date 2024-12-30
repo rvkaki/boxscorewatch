@@ -435,7 +435,7 @@ export type PlayerDashboardByGeneralSplitsParams = {
   VsDivision?: Division;
 };
 
-const playerBaseSplits = [
+export const playerBaseSplits = [
   ...teamBaseSplits,
   "NBA_FANTASY_PTS",
   "DD2",
@@ -492,7 +492,7 @@ export type TeamGameLogsParams = {
   VsDivision?: Division;
 };
 
-const teamGameLogsKeys = [
+export const teamGameLogsKeys = [
   "SEASON_YEAR",
   "TEAM_ID",
   "TEAM_ABBREVIATION",
@@ -568,7 +568,7 @@ export type GameBoxScoreParams = {
   StartRange: string;
 };
 
-const baseBoxScoreStats = [
+export const baseBoxScoreStats = [
   "GAME_ID",
   "TEAM_ID",
   "TEAM_ABBREVIATION",
@@ -821,7 +821,7 @@ export type GameRotationParams = {
   LeagueID: LeagueID;
 };
 
-const TeamRotationKeys = [
+export const TeamRotationKeys = [
   "GAME_ID",
   "TEAM_ID",
   "TEAM_CITY",

@@ -1,4 +1,8 @@
-import { MongoClient, MongoClientOptions, ServerApiVersion } from "mongodb";
+import {
+  MongoClient,
+  type MongoClientOptions,
+  ServerApiVersion,
+} from "mongodb";
 import { env } from "~/env";
 
 if (!env.MONGO_URI) {

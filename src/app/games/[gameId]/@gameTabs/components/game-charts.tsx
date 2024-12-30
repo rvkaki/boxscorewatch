@@ -4,7 +4,7 @@ import { api } from "~/trpc/server";
 
 export default async function GameCharts({
   gameId,
-  homeTeamId,
+  // homeTeamId,
   awayTeamId,
 }: {
   gameId: string;

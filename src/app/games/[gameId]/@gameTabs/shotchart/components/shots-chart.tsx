@@ -148,44 +148,44 @@ export default function ShotsChart({
                   ? shot.VISITORDESCRIPTION
                   : shot.NEUTRALDESCRIPTION;
 
-            return (
-              <>
-                {idx === 0 || filteredShots[idx - 1]?.PERIOD !== shot.PERIOD ? (
-                  <div
-                    key={`${teamId}_${shot.PERIOD}qtr`}
-                    className="flex w-full items-center gap-1 py-3"
-                  >
-                    <div className="h-[2px] flex-1 bg-neutral-600" />
-                    <p className="text-sm font-semibold text-neutral-400">
-                      {shot.PERIOD > 4
-                        ? `${numberToOrdinal(shot.PERIOD - 4)} Overtime`
-                        : `${numberToOrdinal(shot.PERIOD)} Quarter`}
-                    </p>
-                    <div className="h-[2px] flex-1 bg-neutral-600" />
-                  </div>
-                ) : null}
+            // Returning an array because with <></> it throws a key error
+            return [
+              ...(idx === 0 || filteredShots[idx - 1]?.PERIOD !== shot.PERIOD
+                ? [
+                    <div
+                      key={`${teamId}_${shot.PERIOD}qtr`}
+                      className="flex w-full items-center gap-1 py-3"
+                    >
+                      <div className="h-[2px] flex-1 bg-neutral-600" />
+                      <p className="text-sm font-semibold text-neutral-400">
+                        {shot.PERIOD > 4
+                          ? `${numberToOrdinal(shot.PERIOD - 4)} Overtime`
+                          : `${numberToOrdinal(shot.PERIOD)} Quarter`}
+                      </p>
+                      <div className="h-[2px] flex-1 bg-neutral-600" />
+                    </div>,
+                  ]
+                : []),
+              <div
+                key={`${teamId}_${shot.EVENTNUM}_shot`}
+                className={`grid w-full cursor-pointer grid-cols-[40px,40px,1fr] items-center gap-4 px-4 py-2 hover:bg-neutral-800 ${
+                  selectedShotId === shot.EVENTNUM ? "bg-neutral-800" : ""
+                }`}
+                onClick={() => setSelectedShotId(shot.EVENTNUM)}
+                onMouseEnter={() => setHoveredShotId(shot.EVENTNUM)}
+                onMouseLeave={() => setHoveredShotId(null)}
+              >
+                <Image
+                  src={getTeamLogoUrl(shot.PLAYER1_TEAM_ID!)}
+                  alt="Team logo"
+                  width={32}
+                  height={32}
+                />
 
-                <div
-                  key={`${teamId}_${shot.EVENTNUM}_shot`}
-                  className={`grid w-full cursor-pointer grid-cols-[40px,40px,1fr] items-center gap-4 px-4 py-2 hover:bg-neutral-800 ${
-                    selectedShotId === shot.EVENTNUM ? "bg-neutral-800" : ""
-                  }`}
-                  onClick={() => setSelectedShotId(shot.EVENTNUM)}
-                  onMouseEnter={() => setHoveredShotId(shot.EVENTNUM)}
-                  onMouseLeave={() => setHoveredShotId(null)}
-                >
-                  <Image
-                    src={getTeamLogoUrl(shot.PLAYER1_TEAM_ID!)}
-                    alt="Team logo"
-                    width={32}
-                    height={32}
-                  />
-
-                  <span className="text-sm">{shot.PCTIMESTRING}</span>
-                  <span className="text-sm">{description}</span>
-                </div>
-              </>
-            );
+                <span className="text-sm">{shot.PCTIMESTRING}</span>
+                <span className="text-sm">{description}</span>
+              </div>,
+            ];
           })}
         </div>
       </div>

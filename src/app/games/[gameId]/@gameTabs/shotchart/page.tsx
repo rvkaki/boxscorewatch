@@ -1,7 +1,8 @@
+import dynamic from "next/dynamic";
 import { EventTypes } from "~/lib/consts";
 import { type DBGameShotChart, type PlayByPlay } from "~/server/db/types";
 import { api } from "~/trpc/server";
-import ShotsChart from "./components/shots-chart";
+const ShotsChart = dynamic(() => import("./components/shots-chart"));
 
 export default async function ShotChartPage({
   params,

@@ -1,9 +1,8 @@
 import { type Response, fetch as undiciFetch } from "undici";
+import { env } from "~/env";
 import { getProxyAgent } from "./proxy";
 import allTeams from "./teams.json";
 import {
-  LeagueWideShotChartParams,
-  LeagueWideShotChartResponse,
   type GameBoxScoreParams,
   type GameBoxScoreResponse,
   type GameRotationParams,
@@ -14,6 +13,8 @@ import {
   type LeagueGameLogResponse,
   type LeagueHustleStatsPlayerParams,
   type LeagueHustleStatsPlayerResponse,
+  type LeagueWideShotChartParams,
+  type LeagueWideShotChartResponse,
   type NBA_API_Response,
   type PlayByBlayParams,
   type PlayByPlayResponse,
@@ -30,7 +31,6 @@ import {
   type TeamInfoCommonParams,
   type TeamInfoCommonResponse,
 } from "./types";
-import { env } from "~/env";
 
 class NBA_API_Client {
   private baseUrl: string;

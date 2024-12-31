@@ -410,11 +410,10 @@ async function processGames() {
   }
 }
 
-async function run() {
+export async function run() {
   await processGames();
   // await processTeamSeasonAverages();
   await processLeagueWideShotChart();
-  process.exit(0);
 }
 
-await run();
+// await run();

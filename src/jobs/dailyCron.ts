@@ -416,4 +416,3 @@ export async function run() {
   await processLeagueWideShotChart();
 }
 
-// await run();

@@ -1,4 +1,5 @@
 export const dynamic = "force-static";
+export const revalidate = 43200; // 12 hours
 
 import GamesList from "./components/games-list";
 

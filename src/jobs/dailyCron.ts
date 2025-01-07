@@ -4,6 +4,7 @@ import { CUR_SEASON, StatKeyToShortLabel } from "~/lib/consts";
 import { sleep } from "~/lib/utils";
 import client from "~/server/db";
 import { type DBGameStats, type TeamSeasonAverages } from "~/server/db/types";
+import { processTeamSeasonAverages } from "./processTeamSeasonAverages";
 
 export async function getBoxScore(gameId: string) {
   try {
@@ -131,7 +132,7 @@ async function processLeagueWideShotChart() {
   }
 }
 
-async function recalculateStandardDeviationsAndAverages(
+async function recalculateStandardDeviations(
   teamId: number | string,
   gameStats: DBGameStats["teamStats"],
 ) {
@@ -156,7 +157,6 @@ async function recalculateStandardDeviationsAndAverages(
     string,
     { value: number; sq_sum: number }
   > = {};
-  const updatedAverages: Record<string, number> = {};
 
   for (const key of statKeys) {
     const gameStat = gameStats[key];
@@ -173,7 +173,6 @@ async function recalculateStandardDeviationsAndAverages(
       value: updatedStdDev,
       sq_sum: updatedSqSum,
     };
-    updatedAverages[key === "TO" ? "TOV" : key] = updatedAvg;
   }
 
   await client
@@ -184,7 +183,6 @@ async function recalculateStandardDeviationsAndAverages(
       {
         $set: {
           standardDeviations: updatedStandardDeviations,
-          ...updatedAverages,
         },
       },
     );
@@ -388,13 +386,13 @@ async function processGames() {
       HOME_TEAM_PTS: homeTeamStats!.PTS,
     };
 
-    await recalculateStandardDeviationsAndAverages(
+    await recalculateStandardDeviations(
       homeTeamStats!.TEAM_ID,
       // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-explicit-any
       homeTeamStats! as any,
     );
 
-    await recalculateStandardDeviationsAndAverages(
+    await recalculateStandardDeviations(
       awayTeamStats!.TEAM_ID,
       // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-explicit-any
       awayTeamStats! as any,
@@ -412,7 +410,6 @@ async function processGames() {
 
 export async function run() {
   await processGames();
-  // await processTeamSeasonAverages();
+  await processTeamSeasonAverages();
   await processLeagueWideShotChart();
 }
-

@@ -1,4 +1,5 @@
-/* eslint-disable @typescript-eslint/no-unsafe-argument */
+import { QuestionMarkCircledIcon } from "@radix-ui/react-icons";
+import Image from "next/image";
 import {
   Tooltip,
   TooltipContent,
@@ -6,12 +7,11 @@ import {
   TooltipTrigger,
 } from "~/components/ui/tooltip";
 import { StatKeyToShortLabel } from "~/lib/consts";
-import { cn } from "~/lib/utils";
-import { type DBGame } from "~/server/db/types";
+import { cn, getTeamLogoUrl } from "~/lib/utils";
+import { type DBGame, type DBGameStats } from "~/server/db/types";
 import { api } from "~/trpc/server";
-import { QuestionMarkCircledIcon } from "@radix-ui/react-icons";
 
-const keysToIgnore = [
+const teamKeysToIgnore = [
   "TEAM_NAME",
   "TEAM_ID",
   "MIN",
@@ -20,26 +20,45 @@ const keysToIgnore = [
   "GAME_ID",
 ] as const;
 
-export default async function BoxScore({ game }: { game: DBGame }) {
-  const gameStats = await api.games.getGameStats({ gameId: game.GAME_ID });
+const playerKeysToIgnore = [
+  "COMMENT",
+  "GAME_ID",
+  "PLAYER_ID",
+  "PLAYER_NAME",
+  "TEAM_ID",
+  "NICKNAME",
+  "START_POSITION",
+  "TEAM_ABBREVIATION",
+  "TEAM_CITY",
+] as const;
 
+async function TeamBoxScore({
+  homeTeamId,
+  awayTeamId,
+  homeTeamAbv,
+  awayTeamAbv,
+  gameStats,
+  statKeys,
+}: {
+  homeTeamId: number;
+  awayTeamId: number;
+  homeTeamAbv: string;
+  awayTeamAbv: string;
+  gameStats: DBGameStats[];
+  statKeys: Exclude<
+    keyof (typeof gameStats)[number]["teamStats"],
+    (typeof teamKeysToIgnore)[number]
+  >[];
+}) {
   const homeTeamAverages = await api.teams.getSeasonAveragesById({
-    teamId: game.HOME_TEAM_ID.toString(),
+    teamId: homeTeamId.toString(),
   });
   const awayTeamAverages = await api.teams.getSeasonAveragesById({
-    teamId: game.AWAY_TEAM_ID.toString(),
+    teamId: awayTeamId.toString(),
   });
 
-  const homeTeam = gameStats.find((s) => s.TEAM_ID === game.HOME_TEAM_ID)!;
-  const awayTeam = gameStats.find((s) => s.TEAM_ID === game.AWAY_TEAM_ID)!;
-
-  const statKeys = Object.keys(homeTeam.teamStats).filter(
-    (k) =>
-      !keysToIgnore.includes(k as unknown as (typeof keysToIgnore)[number]),
-  ) as Exclude<
-    keyof typeof homeTeam.teamStats,
-    (typeof keysToIgnore)[number]
-  >[];
+  const homeTeam = gameStats.find((s) => s.TEAM_ID === homeTeamId)!;
+  const awayTeam = gameStats.find((s) => s.TEAM_ID === awayTeamId)!;
 
   return (
     <div className="flex w-full flex-col items-end gap-4 py-8">
@@ -100,7 +119,7 @@ export default async function BoxScore({ game }: { game: DBGame }) {
         ))}
 
         <p className="flex items-center justify-center border-b border-neutral-800">
-          {game.AWAY_TEAM_ABBREVIATION}
+          {awayTeamAbv}
         </p>
 
         {statKeys.map((key, i) => {
@@ -148,9 +167,7 @@ export default async function BoxScore({ game }: { game: DBGame }) {
           );
         })}
 
-        <p className="flex items-center justify-center">
-          {game.HOME_TEAM_ABBREVIATION}
-        </p>
+        <p className="flex items-center justify-center">{homeTeamAbv}</p>
 
         {statKeys.map((key, i) => {
           const value: string | number = homeTeam.teamStats[key];
@@ -197,6 +214,226 @@ export default async function BoxScore({ game }: { game: DBGame }) {
           );
         })}
       </div>
+    </div>
+  );
+}
+
+async function PlayersBoxScore({
+  homeTeamId,
+  awayTeamId,
+  gameStats,
+  statKeys,
+}: {
+  homeTeamId: number;
+  awayTeamId: number;
+  gameStats: DBGameStats[];
+  statKeys: Exclude<
+    keyof (typeof gameStats)[number]["playerStats"][number],
+    (typeof playerKeysToIgnore)[number]
+  >[];
+}) {
+  const homeTeam = gameStats.find((s) => s.TEAM_ID === homeTeamId)!;
+  const awayTeam = gameStats.find((s) => s.TEAM_ID === awayTeamId)!;
+
+  return (
+    <div className="flex w-full flex-col items-stretch gap-8">
+      <div className="flex flex-1 flex-col items-start gap-2">
+        <div className="flex items-center gap-2">
+          <Image
+            src={getTeamLogoUrl(awayTeam.TEAM_ID)}
+            width={42}
+            height={42}
+            alt={awayTeam.teamStats.TEAM_NAME}
+          />
+          <p>{awayTeam.teamStats.TEAM_NAME}</p>
+        </div>
+
+        <div className="flex w-full flex-col items-start rounded-sm border border-neutral-800 pb-2">
+          <div
+            className="grid w-full place-items-center bg-neutral-900 px-4 py-2 text-xs"
+            style={{
+              gridTemplateColumns: `1fr repeat(${statKeys.length},40px)`,
+            }}
+          >
+            <p className="place-self-start">Name</p>
+            {statKeys.map((key) => (
+              <p key={key}>{StatKeyToShortLabel[key]}</p>
+            ))}
+          </div>
+
+          {awayTeam.playerStats.map((player) => (
+            <div
+              key={player.PLAYER_ID}
+              className="grid w-full place-items-center px-4 py-1 text-xs hover:bg-neutral-700"
+              style={{
+                gridTemplateColumns: `1fr repeat(${statKeys.length},40px)`,
+              }}
+            >
+              <p className="place-self-start">
+                {player.PLAYER_NAME}
+                <span className="ml-2 text-[10px] font-semibold text-neutral-400">
+                  {player.START_POSITION}
+                </span>
+              </p>
+              {player.MIN === null ? (
+                <div className="col-start-2 -col-end-1">
+                  <p>{player.COMMENT}</p>
+                </div>
+              ) : (
+                statKeys.map((key) => {
+                  const value = player[key];
+                  let strValue = value?.toString() ?? "-";
+                  if (
+                    key === "FG_PCT" ||
+                    key === "FG3_PCT" ||
+                    key === "FT_PCT"
+                  ) {
+                    strValue = ((value as number) * 100).toFixed(1) + "%";
+                  }
+                  if (key === "MIN") {
+                    const [min, sec] = (value as string).split(":") as [
+                      string,
+                      string,
+                    ];
+                    const actualMin = min.split(".")[0]!;
+                    strValue = `${actualMin}:${sec}`;
+                  }
+
+                  return (
+                    <p
+                      key={key}
+                      className={cn("flex items-center justify-center")}
+                    >
+                      {strValue}
+                    </p>
+                  );
+                })
+              )}
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div className="flex flex-1 flex-col items-start gap-2">
+        <div className="flex items-center gap-2">
+          <Image
+            src={getTeamLogoUrl(homeTeam.TEAM_ID)}
+            width={42}
+            height={42}
+            alt={homeTeam.teamStats.TEAM_NAME}
+          />
+          <p>{homeTeam.teamStats.TEAM_NAME}</p>
+        </div>
+
+        <div className="flex w-full flex-col items-start rounded-sm border border-neutral-800 pb-2">
+          <div
+            className="grid w-full place-items-center bg-neutral-900 px-4 py-2 text-xs"
+            style={{
+              gridTemplateColumns: `1fr repeat(${statKeys.length},40px)`,
+            }}
+          >
+            <p className="place-self-start">Name</p>
+            {statKeys.map((key) => (
+              <p key={key}>{StatKeyToShortLabel[key]}</p>
+            ))}
+          </div>
+
+          {homeTeam.playerStats.map((player) => (
+            <div
+              key={player.PLAYER_ID}
+              className="grid w-full place-items-center px-4 py-1 text-xs hover:bg-neutral-700"
+              style={{
+                gridTemplateColumns: `1fr repeat(${statKeys.length},40px)`,
+              }}
+            >
+              <p className="place-self-start">
+                {player.PLAYER_NAME}
+                <span className="ml-2 text-[10px] font-semibold text-neutral-400">
+                  {player.START_POSITION}
+                </span>
+              </p>
+              {player.MIN === null ? (
+                <div className="col-start-2 -col-end-1">
+                  <p>{player.COMMENT}</p>
+                </div>
+              ) : (
+                statKeys.map((key) => {
+                  const value = player[key];
+                  let strValue = value?.toString() ?? "-";
+                  if (
+                    key === "FG_PCT" ||
+                    key === "FG3_PCT" ||
+                    key === "FT_PCT"
+                  ) {
+                    strValue = ((value as number) * 100).toFixed(1) + "%";
+                  }
+                  if (key === "MIN") {
+                    const [min, sec] = (value as string).split(":") as [
+                      string,
+                      string,
+                    ];
+                    const actualMin = min.split(".")[0]!;
+                    strValue = `${actualMin}:${sec}`;
+                  }
+
+                  return (
+                    <p
+                      key={key}
+                      className={cn("flex items-center justify-center")}
+                    >
+                      {strValue}
+                    </p>
+                  );
+                })
+              )}
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export default async function BoxScore({ game }: { game: DBGame }) {
+  const gameStats = await api.games.getGameStats({ gameId: game.GAME_ID });
+
+  const teamStatKeys = Object.keys(gameStats[0]!.teamStats).filter(
+    (k) =>
+      !teamKeysToIgnore.includes(
+        k as unknown as (typeof teamKeysToIgnore)[number],
+      ),
+  ) as Exclude<
+    keyof (typeof gameStats)[number]["teamStats"],
+    (typeof teamKeysToIgnore)[number]
+  >[];
+
+  const playerStatKeys = Object.keys(gameStats[0]!.playerStats[0]!).filter(
+    (k) =>
+      !playerKeysToIgnore.includes(
+        k as unknown as (typeof playerKeysToIgnore)[number],
+      ),
+  ) as Exclude<
+    keyof (typeof gameStats)[number]["playerStats"][number],
+    (typeof playerKeysToIgnore)[number]
+  >[];
+
+  return (
+    <div className="flex w-full flex-col items-start gap-12">
+      <TeamBoxScore
+        gameStats={gameStats}
+        statKeys={teamStatKeys}
+        homeTeamAbv={game.HOME_TEAM_ABBREVIATION}
+        homeTeamId={game.HOME_TEAM_ID}
+        awayTeamAbv={game.AWAY_TEAM_ABBREVIATION}
+        awayTeamId={game.AWAY_TEAM_ID}
+      />
+
+      <PlayersBoxScore
+        homeTeamId={game.HOME_TEAM_ID}
+        awayTeamId={game.AWAY_TEAM_ID}
+        gameStats={gameStats}
+        statKeys={playerStatKeys}
+      />
     </div>
   );
 }

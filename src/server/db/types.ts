@@ -74,7 +74,7 @@ type GameTeamStats = {
 type GamePlayerStats = {
   GAME_ID: string;
   TEAM_ID: number;
-  TEAM_ABREVIATION: string;
+  TEAM_ABBREVIATION: string;
   TEAM_CITY: string;
   PLAYER_ID: number;
   PLAYER_NAME: string;

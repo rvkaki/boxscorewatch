@@ -24,6 +24,8 @@ export default function RunsTooltip({
   };
 }) {
   const [activePlayIdx, setActivePlayIdx] = useState<number | null>(null);
+  const [runStartPlayIdx, setRunStartPlayIdx] = useState<number | null>(null);
+  const [runEndPlayIdx, setRunEndPlayIdx] = useState<number | null>(null);
 
   function handleMouseMove(e: React.MouseEvent) {
     const mouseX = e.clientX;
@@ -40,6 +42,8 @@ export default function RunsTooltip({
       actualY > bound.height
     ) {
       setActivePlayIdx(null);
+      setRunStartPlayIdx(null);
+      setRunEndPlayIdx(null);
       return;
     }
 
@@ -48,7 +52,27 @@ export default function RunsTooltip({
 
     if (!play) {
       setActivePlayIdx(null);
+      setRunStartPlayIdx(null);
+      setRunEndPlayIdx(null);
       return;
+    }
+
+    const hoveredRun = runs.find((run) =>
+      hoveredPlay
+        ? run.startEvent <= hoveredPlay?.EVENTNUM &&
+          run.endEvent >= hoveredPlay?.EVENTNUM
+        : false,
+    );
+
+    if (hoveredRun) {
+      const startX = playbyplay.findIndex(
+        (p) => p.EVENTNUM === hoveredRun.startEvent,
+      );
+      const endX = playbyplay.findIndex(
+        (p) => p.EVENTNUM === hoveredRun.endEvent,
+      );
+      setRunStartPlayIdx(startX);
+      setRunEndPlayIdx(endX);
     }
 
     setActivePlayIdx(playIndex);
@@ -74,6 +98,34 @@ export default function RunsTooltip({
   const runColor =
     hoveredRun?.teamAbbr === homeTeamAbv ? colors.amber[600] : colors.sky[600];
 
+  const highlightPlayers = (() => {
+    if (!hoveredRun) return [];
+
+    const players: Record<number, { name: string; points: number }> = {};
+    for (const play of hoveredRun.plays) {
+      if (players[play.playerId]) {
+        players[play.playerId]!.points += play.points;
+      } else {
+        players[play.playerId] = {
+          name: play.playerName,
+          points: play.points,
+        };
+      }
+    }
+
+    return Object.entries(players)
+      .flatMap(([id, { name, points }]) =>
+        points > hoveredRun.runScore / 2
+          ? {
+              id: Number(id),
+              name,
+              points,
+            }
+          : [],
+      )
+      .sort((a, b) => b.points - a.points);
+  })();
+
   return (
     <div
       className="absolute"
@@ -90,7 +142,7 @@ export default function RunsTooltip({
         <>
           {/* Greyed out bar hover */}
           <div
-            className="h-full bg-white/20"
+            className="absolute left-0 top-0 h-full bg-white/20"
             style={{
               width: `${100 / playbyplay.length}%`,
               transform: `translateX(calc(${activePlayIdx * 100}%))`,
@@ -116,14 +168,6 @@ export default function RunsTooltip({
               <span className="font-bold" style={{ color: scoreColor }}>
                 {playScore?.[0] ?? 0} - {playScore?.[1] ?? 0}
               </span>
-              {hoveredRun ? (
-                <span
-                  className="rounded-sm px-2 py-1 text-sm font-semibold text-white"
-                  style={{ background: runColor, color: hexToBW(runColor) }}
-                >
-                  {hoveredRun.runScore} - {hoveredRun.opponentScore} run
-                </span>
-              ) : null}
             </div>
             <div className="flex flex-1 flex-col items-start gap-1 text-sm">
               <div className="flex items-center gap-2">
@@ -141,6 +185,60 @@ export default function RunsTooltip({
               <span className="max-w-[200px] whitespace-normal text-neutral-400">
                 {playDescription}
               </span>
+            </div>
+          </div>
+        </>
+      )}
+
+      {hoveredRun && runStartPlayIdx && runEndPlayIdx && (
+        <>
+          {/* Greyed out bar hover */}
+          <div
+            className="absolute left-0 top-0 h-full overflow-visible"
+            style={{
+              transform: `translateX(${runStartPlayIdx * 100}%)`,
+              width: `${100 / playbyplay.length}%`,
+            }}
+          >
+            <div
+              className="h-full bg-white/10"
+              style={{
+                width: `${(runEndPlayIdx - runStartPlayIdx + 1) * 100}%`,
+              }}
+            />
+          </div>
+          {/* Tooltip */}
+          <div
+            className="absolute flex min-w-[200px] flex-col items-start gap-3 rounded-sm bg-neutral-800/90 p-3"
+            style={{
+              left:
+                runStartPlayIdx < (4 * playbyplay.length) / 5
+                  ? `${(runEndPlayIdx + 1) * (100 / playbyplay.length)}%`
+                  : "auto",
+              right:
+                runStartPlayIdx < (4 * playbyplay.length) / 5
+                  ? "auto"
+                  : `${(playbyplay.length - runStartPlayIdx) * (100 / playbyplay.length)}%`,
+            }}
+          >
+            <div className="flex w-full flex-col items-start gap-2">
+              <span className="font-semibold" style={{ color: runColor }}>
+                {hoveredRun.runScore} - {hoveredRun.opponentScore}{" "}
+                {hoveredRun.teamAbbr} run
+              </span>
+
+              {highlightPlayers.map((player) => (
+                <div
+                  key={player.id}
+                  className="flex items-center justify-between gap-2"
+                  style={{ color: hexToBW(runColor) }}
+                >
+                  <span>
+                    {player.name.split(" ")[0]![0]}. {player.name.split(" ")[1]}
+                  </span>
+                  <span>{player.points} points</span>
+                </div>
+              ))}
             </div>
           </div>
         </>

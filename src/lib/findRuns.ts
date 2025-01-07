@@ -15,6 +15,7 @@ interface Run {
   teamAbbr: string;
   runScore: number;
   opponentScore: number;
+  plays: ScoringPlay[];
 }
 
 interface ScoringPlay {
@@ -25,6 +26,8 @@ interface ScoringPlay {
   period: number;
   isFreeThrow: boolean;
   previousEventNum: number | null; // To link consecutive free throws
+  playerId: number;
+  playerName: string;
 }
 
 function findRuns(plays: PlayByPlay[]): Run[] {
@@ -50,6 +53,8 @@ function findRuns(plays: PlayByPlay[]): Run[] {
       period: play.PERIOD,
       isFreeThrow: play.EVENTMSGTYPE === 2,
       previousEventNum: null,
+      playerId: play.PLAYER1_ID,
+      playerName: play.PLAYER1_NAME!,
     };
 
     // Handle free throws
@@ -66,7 +71,7 @@ function findRuns(plays: PlayByPlay[]): Run[] {
         // Allow for one potential play in between (like a timeout)
 
         consecutiveFreeThrows.push(scoringPlay);
-        return; // Don't add individual free throws to lastTwoScores
+        return scoringPlay;
       } else {
         // If we had previous free throws, add them as one play
         if (consecutiveFreeThrows.length > 0) {
@@ -82,7 +87,7 @@ function findRuns(plays: PlayByPlay[]): Run[] {
         }
         // Start new free throw sequence
         consecutiveFreeThrows = [scoringPlay];
-        return;
+        return scoringPlay;
       }
     } else {
       // If we had free throws before this shot, add them as one play
@@ -102,6 +107,8 @@ function findRuns(plays: PlayByPlay[]): Run[] {
       lastTwoScores.push(scoringPlay);
       if (lastTwoScores.length > 2) lastTwoScores.shift();
     }
+
+    return scoringPlay;
   }
 
   for (const play of plays) {
@@ -136,7 +143,7 @@ function findRuns(plays: PlayByPlay[]): Run[] {
       consecutiveFreeThrows = [];
     }
 
-    addScoringPlay(play);
+    const scoringPlay = addScoringPlay(play);
 
     // Check for two straight scores from same team to start a run
     if (!currentRun && lastTwoScores.length === 2) {
@@ -149,6 +156,7 @@ function findRuns(plays: PlayByPlay[]): Run[] {
           teamAbbr: lastTwoScores[0]!.teamAbbr,
           runScore: lastTwoScores[0]!.points + lastTwoScores[1]!.points,
           opponentScore: 0,
+          plays: [lastTwoScores[0]!, lastTwoScores[1]!],
         };
       }
       continue;
@@ -162,6 +170,7 @@ function findRuns(plays: PlayByPlay[]): Run[] {
       if (play.PLAYER1_TEAM_ID === currentRun.teamId) {
         currentRun.runScore += points;
         currentRun.endEvent = play.EVENTNUM;
+        currentRun.plays.push(scoringPlay);
       } else {
         currentRun.opponentScore += points;
       }
@@ -187,6 +196,7 @@ function findRuns(plays: PlayByPlay[]): Run[] {
           teamAbbr: lastTwoScores[0]!.teamAbbr,
           runScore: lastTwoScores[0]!.points + lastTwoScores[1]!.points,
           opponentScore: 0,
+          plays: [lastTwoScores[0]!, lastTwoScores[1]!],
         };
       }
     }

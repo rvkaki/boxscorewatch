@@ -73,7 +73,7 @@ export default async function RunsChart({
   ).limits;
 
   return (
-    <div className="flex flex-col items-start gap-12">
+    <div className="flex flex-col items-start gap-12 overflow-auto">
       <div
         className="relative h-full w-full"
         style={{

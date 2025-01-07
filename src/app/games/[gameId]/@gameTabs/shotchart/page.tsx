@@ -57,7 +57,7 @@ export default async function ShotChartPage({
   const playByPlayWithLocation = await getPlayByPlayWithLocation();
 
   return (
-    <div className="flex w-full flex-col items-start gap-12">
+    <div className="flex w-full flex-col items-start gap-24 lg:gap-12">
       {Object.entries(playByPlayWithLocation).map(([teamId, plays]) => {
         return (
           <ShotsChart

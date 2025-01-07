@@ -5,7 +5,7 @@ import GamesList from "./components/games-list";
 
 export default async function Home() {
   return (
-    <main className="flex h-full w-full max-w-7xl flex-col items-start justify-center py-12 text-black">
+    <main className="flex h-full w-full max-w-7xl flex-col items-start justify-center py-6 text-black md:py-12">
       <GamesList />
     </main>
   );

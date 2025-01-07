@@ -61,7 +61,7 @@ async function TeamBoxScore({
   const awayTeam = gameStats.find((s) => s.TEAM_ID === awayTeamId)!;
 
   return (
-    <div className="flex w-full flex-col items-end gap-4 py-8">
+    <div className="flex w-full flex-col items-end gap-4 md:py-8">
       <TooltipProvider>
         <Tooltip delayDuration={0}>
           <TooltipTrigger asChild>
@@ -99,11 +99,11 @@ async function TeamBoxScore({
       </TooltipProvider>
 
       <div
-        className="grid w-full grid-rows-3 place-items-stretch justify-items-stretch rounded-sm border border-neutral-800 text-center text-neutral-400"
-        style={{
-          gridTemplateColumns: `repeat(${statKeys.length + 1}, minmax(52px, 1fr))`,
-          gridTemplateRows: "repeat(3, minmax(52px, 1fr)",
-        }}
+        className={cn(
+          "grid w-full place-items-stretch justify-items-stretch overflow-auto rounded-sm border border-neutral-800 text-center text-neutral-400",
+          "grid-cols-[repeat(20,_minmax(40px,_1fr))] grid-rows-[repeat(3,_minmax(40px,_1fr))] text-xs",
+          "xl:text-base xl:grid-cols-[repeat(20,_minmax(52px,_1fr))] xl:grid-rows-[repeat(3,_minmax(52px,_1fr))]",
+        )}
       >
         <div className="w-full border-b border-neutral-800"></div>
         {statKeys.map((key, i) => (
@@ -239,21 +239,23 @@ async function PlayersBoxScore({
     <div className="flex w-full flex-col items-stretch gap-8">
       <div className="flex flex-1 flex-col items-start gap-2">
         <div className="flex items-center gap-2">
-          <Image
-            src={getTeamLogoUrl(awayTeam.TEAM_ID)}
-            width={42}
-            height={42}
-            alt={awayTeam.teamStats.TEAM_NAME}
-          />
+          <div className="relative aspect-square h-[36px] w-[36px] lg:h-[42px] lg:w-[42px]">
+            <Image
+              src={getTeamLogoUrl(awayTeam.TEAM_ID)}
+              fill
+              alt={awayTeam.teamStats.TEAM_NAME}
+            />
+          </div>
           <p>{awayTeam.teamStats.TEAM_NAME}</p>
         </div>
 
-        <div className="flex w-full flex-col items-start rounded-sm border border-neutral-800 pb-2">
+        <div className="flex w-full flex-col items-start overflow-auto rounded-sm border border-neutral-800 pb-2">
           <div
-            className="grid w-full place-items-center bg-neutral-900 px-4 py-2 text-xs"
-            style={{
-              gridTemplateColumns: `1fr repeat(${statKeys.length},40px)`,
-            }}
+            className={cn(
+              "grid w-full place-items-center bg-neutral-900 px-4 py-2 text-xs",
+              "grid-cols-[120px_repeat(20,40px)]",
+              "lg:grid-cols-[1fr_repeat(20,40px)]",
+            )}
           >
             <p className="place-self-start">Name</p>
             {statKeys.map((key) => (
@@ -264,12 +266,13 @@ async function PlayersBoxScore({
           {awayTeam.playerStats.map((player) => (
             <div
               key={player.PLAYER_ID}
-              className="grid w-full place-items-center px-4 py-1 text-xs hover:bg-neutral-700"
-              style={{
-                gridTemplateColumns: `1fr repeat(${statKeys.length},40px)`,
-              }}
+              className={cn(
+                "grid w-full place-items-center px-4 py-1 text-xs hover:bg-neutral-700",
+                "grid-cols-[120px_repeat(20,40px)]",
+                "lg:grid-cols-[1fr_repeat(20,40px)]",
+              )}
             >
-              <p className="place-self-start">
+              <p className="w-full place-self-start overflow-hidden text-ellipsis whitespace-nowrap">
                 {player.PLAYER_NAME}
                 <span className="ml-2 text-[10px] font-semibold text-neutral-400">
                   {player.START_POSITION}
@@ -325,12 +328,13 @@ async function PlayersBoxScore({
           <p>{homeTeam.teamStats.TEAM_NAME}</p>
         </div>
 
-        <div className="flex w-full flex-col items-start rounded-sm border border-neutral-800 pb-2">
+        <div className="flex w-full flex-col items-start overflow-auto rounded-sm border border-neutral-800 pb-2">
           <div
-            className="grid w-full place-items-center bg-neutral-900 px-4 py-2 text-xs"
-            style={{
-              gridTemplateColumns: `1fr repeat(${statKeys.length},40px)`,
-            }}
+            className={cn(
+              "grid w-full place-items-center bg-neutral-900 px-4 py-2 text-xs",
+              "grid-cols-[120px_repeat(20,40px)]",
+              "lg:grid-cols-[1fr_repeat(20,40px)]",
+            )}
           >
             <p className="place-self-start">Name</p>
             {statKeys.map((key) => (
@@ -341,12 +345,13 @@ async function PlayersBoxScore({
           {homeTeam.playerStats.map((player) => (
             <div
               key={player.PLAYER_ID}
-              className="grid w-full place-items-center px-4 py-1 text-xs hover:bg-neutral-700"
-              style={{
-                gridTemplateColumns: `1fr repeat(${statKeys.length},40px)`,
-              }}
+              className={cn(
+                "grid w-full place-items-center px-4 py-1 text-xs hover:bg-neutral-700",
+                "grid-cols-[120px_repeat(20,40px)]",
+                "lg:grid-cols-[1fr_repeat(20,40px)]",
+              )}
             >
-              <p className="place-self-start">
+              <p className="w-full place-self-start overflow-hidden text-ellipsis whitespace-nowrap">
                 {player.PLAYER_NAME}
                 <span className="ml-2 text-[10px] font-semibold text-neutral-400">
                   {player.START_POSITION}

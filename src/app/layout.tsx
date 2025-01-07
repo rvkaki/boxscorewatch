@@ -20,7 +20,7 @@ export default function RootLayout({
       <body className="dark">
         <TRPCReactProvider>
           <div className="flex min-h-screen flex-col items-center justify-center">
-            <nav className="flex w-full items-center justify-between border-b border-neutral-900 px-12 py-4">
+            <nav className="flex w-full items-center justify-between border-b border-neutral-900 px-4 py-2 lg:px-12 md:py-4">
               <div className="flex items-center gap-4">
                 <Link href="/" className="text-lg font-bold">
                   BSW

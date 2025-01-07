@@ -8,7 +8,11 @@ export default function GameTabsList({ gameId }: { gameId: string }) {
   const tab = useSelectedLayoutSegment("gameTabs");
 
   return (
-    <Tabs value={tab ?? undefined} defaultValue="box-score" className="w-full">
+    <Tabs
+      value={tab ?? undefined}
+      defaultValue="box-score"
+      className="flex w-full justify-center md:justify-start"
+    >
       <TabsList>
         <TabsTrigger value="(boxScore)" asChild>
           <Link href={`/games/${gameId}`}>Box Score</Link>

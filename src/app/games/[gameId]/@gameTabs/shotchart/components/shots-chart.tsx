@@ -114,7 +114,7 @@ export default function ShotsChart({
   );
 
   return (
-    <div className="flex h-full max-h-[800px] w-full items-stretch justify-between gap-4">
+    <div className="flex h-full w-full flex-col-reverse items-stretch justify-between gap-4 lg:max-h-[800px] lg:flex-row">
       <div className="flex flex-[5] flex-col items-start gap-4">
         {/* Selected play video */}
         <div className="grid aspect-video w-full place-items-center rounded-lg bg-neutral-900">
@@ -131,7 +131,7 @@ export default function ShotsChart({
           )}
         </div>
 
-        <div className="flex w-full flex-1 flex-col items-start overflow-y-auto rounded-md border border-neutral-600">
+        <div className="flex max-h-[400px] w-full flex-1 flex-col items-start overflow-y-auto rounded-md border border-neutral-600 lg:max-h-[auto]">
           {filteredShots.length === 0 && (
             <div className="flex h-full w-full items-center justify-center p-4">
               <p className="max-w-[30ch] text-center text-neutral-400">

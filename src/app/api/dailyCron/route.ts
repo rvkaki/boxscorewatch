@@ -1,6 +1,6 @@
 import { run } from "~/jobs/dailyCron";
 
-export async function GET(req: Request) {
+export async function POST(req: Request) {
   if (
     req.headers.get("Authorization") !== `Bearer ${process.env.CRON_SECRET}`
   ) {

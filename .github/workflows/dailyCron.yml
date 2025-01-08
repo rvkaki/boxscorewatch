@@ -1,0 +1,13 @@
+name: Daily Cron Job
+on:
+  schedule:
+    - cron: '0 8 * * *'
+jobs:
+  cron:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Daily Cron Job
+        run: |
+          curl --request POST \
+          --url 'https://boxscorewatch.rjvieira.com/api/dailyCron' \
+          --header 'Authorization: Bearer ${{ secrets.CRON_SECRET }}'

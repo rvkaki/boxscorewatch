@@ -14,6 +14,12 @@ const config = {
         port: "",
         pathname: "/**",
       },
+      {
+        protocol: "https",
+        hostname: "dims.apnews.com",
+        port: "",
+        pathname: "/**",
+      },
     ],
   },
 };

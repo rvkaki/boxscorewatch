@@ -116,6 +116,19 @@ export async function getShotCharts(gameId: string) {
   }
 }
 
+async function getScoreboard(date: Date) {
+  try {
+    return await nbaApi.getScoreboard({
+      GameDate: format(date, "yyyy-MM-dd"),
+      LeagueID: "00",
+      DayOffset: "0",
+    });
+  } catch (e) {
+    console.error("Error fetching scoreboard", date, e);
+    return null;
+  }
+}
+
 async function processLeagueWideShotChart() {
   const shotChart = await getLeagueWideShotChart();
 
@@ -186,6 +199,68 @@ async function recalculateStandardDeviations(
         },
       },
     );
+}
+
+async function processStandingsUpdate() {
+  const lastGame = await client
+    .db(CUR_SEASON)
+    .collection("games")
+    .findOne(
+      {},
+      {
+        sort: { GAME_DATE: -1 },
+      },
+    );
+
+  const today = new Date(lastGame?.GAME_DATE as string);
+  const yesterday = add(today, { days: -1 });
+  const todayScoreboard = await getScoreboard(today);
+  const yesterdayScoreboard = await getScoreboard(yesterday);
+
+  if (!todayScoreboard || !yesterdayScoreboard) {
+    console.error("Error fetching scoreboard");
+    return;
+  }
+
+  const todayStandings = {
+    east: todayScoreboard.EastConfStandingsByDay,
+    west: todayScoreboard.WestConfStandingsByDay,
+  };
+
+  const yesterdayStandings = {
+    east: yesterdayScoreboard.EastConfStandingsByDay,
+    west: yesterdayScoreboard.WestConfStandingsByDay,
+  };
+
+  const standingsWithChanges = {
+    east: todayStandings.east.map((team, todayPos) => {
+      const yesterdayPos = yesterdayStandings.east.findIndex(
+        (t) => t.TEAM_ID === team.TEAM_ID,
+      );
+
+      return {
+        ...team,
+        change: yesterdayPos - todayPos,
+      };
+    }),
+    west: todayStandings.west.map((team, todayPos) => {
+      const yesterdayPos = yesterdayStandings.west.findIndex(
+        (t) => t.TEAM_ID === team.TEAM_ID,
+      );
+
+      return {
+        ...team,
+        change: yesterdayPos - todayPos,
+      };
+    }),
+  };
+
+  await client.db(CUR_SEASON).collection("standings").deleteMany({});
+
+  await client
+    .db(CUR_SEASON)
+    .collection("standings")
+    .insertOne(standingsWithChanges);
 }
 
 async function processGames() {
@@ -412,4 +487,5 @@ export async function run() {
   await processGames();
   await processTeamSeasonAverages();
   await processLeagueWideShotChart();
+  await processStandingsUpdate();
 }

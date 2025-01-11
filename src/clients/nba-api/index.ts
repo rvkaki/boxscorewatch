@@ -22,6 +22,8 @@ import {
   type PlayerDashboardByGeneralSplitsResponse,
   type PlayerIndexParams,
   type PlayerIndexResponse,
+  type ScoreboardV2Params,
+  type ScoreboardV2Response,
   type ShotChartDetailParams,
   type ShotChartDetailResponse,
   type TeamDashboardByGeneralSplitsParams,
@@ -318,6 +320,20 @@ class NBA_API_Client {
     }
 
     return res;
+  }
+
+  async getScoreboard(params: ScoreboardV2Params) {
+    const queryString = new URLSearchParams(params).toString();
+    const data = (await this.fetch(
+      `/stats/scoreboardV2?${queryString}`,
+    )) as ScoreboardV2Response;
+    return this.parseResponse<
+      ScoreboardV2Response["resource"],
+      ScoreboardV2Response["parameters"],
+      Array<ScoreboardV2Response["resultSets"][number]["name"]>,
+      Array<ScoreboardV2Response["resultSets"][number]["headers"]>,
+      ScoreboardV2Response["resultSets"][number]["rowSet"][number][number]
+    >(data);
   }
 }
 

@@ -294,3 +294,47 @@ type LeagueWideShotChart = {
 export type DBLeagueWideShotChart = {
   League_Wide: LeagueWideShotChart[];
 };
+
+type StandingsItem<T extends "East" | "West"> = {
+  TEAM_ID: number;
+  LEAGUE_ID: "00";
+  SEASON_ID: string;
+  STANDINGSDATE: string;
+  CONFERENCE: T;
+  TEAM: string;
+  G: number;
+  W: number;
+  L: number;
+  W_PCT: number;
+  HOME_RECORD: string;
+  ROAD_RECORD: string;
+  change: number;
+};
+export type DBStandings = {
+  east: StandingsItem<"East">[];
+  west: StandingsItem<"West">[];
+};
+
+export type DBTeam = {
+  TEAM_ID: number;
+  SEASON_YEAR: string;
+  TEAM_CITY: string;
+  TEAM_NAME: string;
+  TEAM_ABBREVIATION: string;
+  TEAM_CONFERENCE: "East" | "West";
+  TEAM_DIVISION: string;
+  TEAM_CODE: string;
+  TEAM_SLUG: string;
+  MIN_YEAR: string;
+  MAX_YEAR: string;
+  W: number;
+  L: number;
+  W_PCT: number;
+};
+
+export type DBNews = {
+  date: string;
+  title: string;
+  imageUrl: string | null;
+  link: string;
+};

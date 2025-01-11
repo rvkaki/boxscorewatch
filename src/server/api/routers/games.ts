@@ -12,7 +12,92 @@ import {
   type DBPlayByPlay,
 } from "~/server/db/types";
 
+// Get game top performer based on gameScore
+// the formula is PTS + 0.4 * FG - 0.7 * FGA - 0.4*(FTA - FT) + 0.7 * ORB + 0.3 * DRB + STL + 0.7 * AST + 0.7 * BLK - 0.4 * PF - TOV.
+function getPlayerGameScore(player: DBGameStats["playerStats"][0]) {
+  const {
+    PTS = 0,
+    FGM = 0,
+    FGA = 0,
+    FTA = 0,
+    FTM = 0,
+    OREB = 0,
+    DREB = 0,
+    STL = 0,
+    AST = 0,
+    BLK = 0,
+    PF = 0,
+    TO = 0,
+  } = player;
+
+  return (
+    PTS! +
+    0.4 * FGM! -
+    0.7 * FGA! -
+    0.4 * (FTA! - FTM!) +
+    0.7 * OREB! +
+    0.3 * DREB! +
+    STL! +
+    0.7 * AST! +
+    0.7 * BLK! -
+    0.4 * PF! -
+    TO!
+  );
+}
+
+async function getLatestGames() {
+  const lastDate = (await client
+    .db(CUR_SEASON)
+    .collection("games")
+    .find()
+    .sort({ GAME_DATE: -1 })
+    .project({ GAME_DATE: 1 })
+    .limit(1)
+    .next()) as { GAME_DATE: string };
+
+  const games = (await client
+    .db(CUR_SEASON)
+    .collection("games")
+    .find({ GAME_DATE: lastDate.GAME_DATE })
+    .toArray()) as unknown as DBGame[];
+
+  return games;
+}
+
 export const gamesRouter = createTRPCRouter({
+  getLatest: publicProcedure.query(async () => {
+    return getLatestGames();
+  }),
+  getTopPerformers: publicProcedure.query(async () => {
+    const latestGames = await getLatestGames();
+
+    const gameStats = (await client
+      .db(CUR_SEASON)
+      .collection("gameStats")
+      .find({ GAME_ID: { $in: latestGames.map((game) => game.GAME_ID) } })
+      .toArray()) as unknown as DBGameStats[];
+
+    const topPerformers = gameStats
+      .flatMap((game) => {
+        return game.playerStats.flatMap((player) => {
+          const gameScore = getPlayerGameScore(player);
+          if (gameScore === 0) {
+            return [];
+          }
+
+          return {
+            gameScore,
+            player,
+            gameId: game.GAME_ID,
+          };
+        });
+      })
+      .sort((a, b) => {
+        return b.gameScore - a.gameScore;
+      });
+
+    return topPerformers.slice(0, 6);
+  }),
   getGrouppedByDate: publicProcedure.query(async () => {
     const games = (await client
       .db(CUR_SEASON)

@@ -1,10 +1,10 @@
 import "~/styles/globals.css";
 
+import { Analytics } from "@vercel/analytics/react";
 import { GeistSans } from "geist/font/sans";
 import { type Metadata } from "next";
-
-import { TRPCReactProvider } from "~/trpc/react";
 import Link from "next/link";
+import { TRPCReactProvider } from "~/trpc/react";
 
 export const metadata: Metadata = {
   title: "Box Score Watch",
@@ -38,6 +38,7 @@ export default function RootLayout({
               </div>
             </nav>
             {children}
+            <Analytics />
           </div>
         </TRPCReactProvider>
       </body>

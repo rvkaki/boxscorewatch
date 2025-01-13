@@ -508,8 +508,10 @@ async function processGames() {
 }
 
 export async function run() {
+  console.time("dailyCron");
   await processGames();
   await processTeamSeasonAverages();
   await processLeagueWideShotChart();
   await processStandingsUpdate();
+  console.timeEnd("dailyCron");
 }

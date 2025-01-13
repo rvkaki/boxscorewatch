@@ -42,34 +42,6 @@ def parse_top_news(response):
     return news
 
 
-def parse_article(response):
-    # If the GET request is successful, the status code will be 200
-    if response.status_code == 200:
-        # Get the content of the response
-        webpage = response.content
-        # Create a BeautifulSoup object and specify the parser
-        soup = BeautifulSoup(webpage, "html.parser")
-        # Parse the article title and body
-        title = soup.find("h1").text
-        body = soup.find("div", {"class": "RichTextStoryBody"})
-        # Return title and body
-        return title, body.text
-
-
-def get_top_articles(news, n=5):
-    _news = []
-    for headline, url in news[:n]:
-        article = get_url(url)
-        _news.append(parse_article(article))
-    return _news
-
-
-def scrape_top_news():
-    # Send a GET request to the website
-    top_news = get_url(nba_news_url, sleep=0)
-    return get_top_articles(parse_top_news(top_news))
-
-
 def main():
     config = dotenv_values(".env")
     mongodb_client = MongoClient(config["MONGO_URI"])

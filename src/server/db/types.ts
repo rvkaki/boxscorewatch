@@ -309,6 +309,7 @@ type StandingsItem<T extends "East" | "West"> = {
   HOME_RECORD: string;
   ROAD_RECORD: string;
   change: number;
+  streak: number;
 };
 export type DBStandings = {
   east: StandingsItem<"East">[];

@@ -129,6 +129,19 @@ async function getScoreboard(date: Date) {
   }
 }
 
+async function getLeagueStandings() {
+  try {
+    return await nbaApi.getLeagueStandings({
+      LeagueID: "00",
+      Season: CUR_SEASON,
+      SeasonType: "Regular Season",
+    });
+  } catch (e) {
+    console.error("Error fetching standings", e);
+    return null;
+  }
+}
+
 async function processLeagueWideShotChart() {
   const shotChart = await getLeagueWideShotChart();
 
@@ -232,6 +245,15 @@ async function processStandingsUpdate() {
     west: yesterdayScoreboard.WestConfStandingsByDay,
   };
 
+  const leagueStandings = await getLeagueStandings();
+  const activeStreaksByTeam = leagueStandings?.Standings.reduce(
+    (acc, row) => {
+      acc[row.TeamID as number] = row.CurrentStreak as number;
+      return acc;
+    },
+    {} as Record<number, number>,
+  );
+
   const standingsWithChanges = {
     east: todayStandings.east.map((team, todayPos) => {
       const yesterdayPos = yesterdayStandings.east.findIndex(
@@ -241,6 +263,7 @@ async function processStandingsUpdate() {
       return {
         ...team,
         change: yesterdayPos - todayPos,
+        streak: activeStreaksByTeam?.[team.TEAM_ID as number] ?? 0,
       };
     }),
     west: todayStandings.west.map((team, todayPos) => {
@@ -251,6 +274,7 @@ async function processStandingsUpdate() {
       return {
         ...team,
         change: yesterdayPos - todayPos,
+        streak: activeStreaksByTeam?.[team.TEAM_ID as number] ?? 0,
       };
     }),
   };

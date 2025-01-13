@@ -13,6 +13,8 @@ import {
   type LeagueGameLogResponse,
   type LeagueHustleStatsPlayerParams,
   type LeagueHustleStatsPlayerResponse,
+  type LeagueStandingsParams,
+  type LeagueStandingsResponse,
   type LeagueWideShotChartParams,
   type LeagueWideShotChartResponse,
   type NBA_API_Response,
@@ -333,6 +335,20 @@ class NBA_API_Client {
       Array<ScoreboardV2Response["resultSets"][number]["name"]>,
       Array<ScoreboardV2Response["resultSets"][number]["headers"]>,
       ScoreboardV2Response["resultSets"][number]["rowSet"][number][number]
+    >(data);
+  }
+
+  async getLeagueStandings(params: LeagueStandingsParams) {
+    const queryString = new URLSearchParams(params).toString();
+    const data = (await this.fetch(
+      `/stats/leaguestandings?${queryString}`,
+    )) as LeagueStandingsResponse;
+    return this.parseResponse<
+      LeagueStandingsResponse["resource"],
+      LeagueStandingsResponse["parameters"],
+      Array<LeagueStandingsResponse["resultSets"][number]["name"]>,
+      Array<LeagueStandingsResponse["resultSets"][number]["headers"]>,
+      LeagueStandingsResponse["resultSets"][number]["rowSet"][number][number]
     >(data);
   }
 }

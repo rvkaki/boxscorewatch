@@ -9,6 +9,7 @@ import {
 import TopPerformerCard from "./components/top-performer-card";
 import Image from "next/image";
 import Link from "next/link";
+import { cn } from "~/lib/utils";
 
 export default async function Home() {
   const teams = await api.teams.getAll();
@@ -75,6 +76,8 @@ export default async function Home() {
                 <div key={conf} className="flex flex-1 flex-col gap-2">
                   <p className="font-semibold capitalize">{conf}</p>
                   {teams.map((team, idx) => {
+                    const streak = team.streak;
+
                     return (
                       <div key={team.TEAM_ID} className="w-full">
                         {(idx === 6 || idx === 10) && (
@@ -84,24 +87,39 @@ export default async function Home() {
                           ></div>
                         )}
 
-                        <div className="grid w-full grid-cols-[24px_1fr_1fr_32px] rounded-md bg-neutral-900 px-4 py-2 text-sm">
+                        <div className="grid w-full grid-cols-[24px_48px_1fr_32px_32px] rounded-md bg-neutral-900 px-3 py-2 text-sm">
                           <span className="text-neutral-500">{idx + 1}.</span>
                           <span>
                             {teamsById[team.TEAM_ID]?.TEAM_ABBREVIATION}
                           </span>
-                          <span className="text-neutral-300">
+                          <span className="text-neutral-400">
                             {team.W} - {team.L}
                           </span>
+                          <div>
+                            {Math.abs(streak) > 3 ? (
+                              <span
+                                className={cn(
+                                  "rounded-sm px-1.5 py-0.5 text-[10px]",
+                                  streak > 0
+                                    ? "bg-green-950 text-green-400"
+                                    : "bg-red-950 text-red-400",
+                                )}
+                              >
+                                {streak > 0 ? "W" : "L"}
+                                {Math.abs(streak)}
+                              </span>
+                            ) : null}
+                          </div>
                           <div className="self-center justify-self-end">
                             {team.change > 0 ? (
-                              <span className="flex items-center gap-1 text-xs text-green-500">
-                                <DoubleArrowUpIcon />
+                              <span className="flex items-center gap-0.5 text-xs text-green-500">
                                 {team.change}
+                                <DoubleArrowUpIcon />
                               </span>
                             ) : team.change < 0 ? (
-                              <span className="flex items-center gap-1 text-xs text-red-500">
-                                <DoubleArrowDownIcon />
+                              <span className="flex items-center gap-0.5 text-xs text-red-500">
                                 {team.change}
+                                <DoubleArrowDownIcon />
                               </span>
                             ) : (
                               <span className="text-neutral-500">

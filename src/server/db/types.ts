@@ -69,6 +69,10 @@ type GameTeamStats = {
   PF: number;
   PTS: number;
   PLUS_MINUS: number;
+  FB_PTS: number;
+  PITP: number;
+  SECOND_CHANCE_PTS: number;
+  PTS_OFF_TO: number;
 };
 
 type GamePlayerStats = {

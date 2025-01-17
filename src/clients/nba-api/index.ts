@@ -3,6 +3,7 @@ import { env } from "~/env";
 import { getProxyAgent } from "./proxy";
 import allTeams from "./teams.json";
 import {
+  type GameBoxScoreMiscResponse,
   type GameBoxScoreParams,
   type GameBoxScoreResponse,
   type GameRotationParams,
@@ -349,6 +350,20 @@ class NBA_API_Client {
       Array<LeagueStandingsResponse["resultSets"][number]["name"]>,
       Array<LeagueStandingsResponse["resultSets"][number]["headers"]>,
       LeagueStandingsResponse["resultSets"][number]["rowSet"][number][number]
+    >(data);
+  }
+
+  async getGameBoxscoreMisc(params: GameBoxScoreParams) {
+    const queryString = new URLSearchParams(params).toString();
+    const data = (await this.fetch(
+      `/stats/boxscoremiscv2?${queryString}`,
+    )) as GameBoxScoreMiscResponse;
+    return this.parseResponse<
+      GameBoxScoreMiscResponse["resource"],
+      GameBoxScoreMiscResponse["parameters"],
+      Array<GameBoxScoreMiscResponse["resultSets"][number]["name"]>,
+      Array<GameBoxScoreMiscResponse["resultSets"][number]["headers"]>,
+      GameBoxScoreMiscResponse["resultSets"][number]["rowSet"][number][number]
     >(data);
   }
 }

@@ -26,6 +26,9 @@ export default function GameTabsList({ gameId }: { gameId: string }) {
         <TabsTrigger value="rotations" asChild>
           <Link href={`/games/${gameId}/rotations`}>Rotations</Link>
         </TabsTrigger>
+        <TabsTrigger value="game-charts" asChild>
+          <Link href={`/games/${gameId}/game-charts`}>Game Charts</Link>
+        </TabsTrigger>
       </TabsList>
     </Tabs>
   );

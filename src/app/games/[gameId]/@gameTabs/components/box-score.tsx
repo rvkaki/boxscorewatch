@@ -18,6 +18,10 @@ const teamKeysToIgnore = [
   "TEAM_ABBREVIATION",
   "TEAM_CITY",
   "GAME_ID",
+  "PITP",
+  "SECOND_CHANCE_PTS",
+  "PTS_OFF_TO",
+  "FB_PTS",
 ] as const;
 
 const playerKeysToIgnore = [

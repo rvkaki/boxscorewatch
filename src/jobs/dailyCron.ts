@@ -142,6 +142,22 @@ async function getLeagueStandings() {
   }
 }
 
+async function getGameBoxscoreMisc(gameId: string) {
+  try {
+    return await nbaApi.getGameBoxscoreMisc({
+      GameID: gameId,
+      EndPeriod: "0",
+      StartPeriod: "0",
+      EndRange: "0",
+      StartRange: "0",
+      RangeType: "0",
+    });
+  } catch (e) {
+    console.error("Error fetching boxscore", gameId, e);
+    return null;
+  }
+}
+
 async function processLeagueWideShotChart() {
   const shotChart = await getLeagueWideShotChart();
 
@@ -347,6 +363,9 @@ async function processGames() {
     // Get boxscore
     const boxScore = await getBoxScore(gameId);
 
+    // Get boxscore misc
+    const boxScoreMisc = await getGameBoxscoreMisc(gameId);
+
     // Get play by play
     const PlayByPlay = (await getPlayByPlay(gameId)) ?? [];
 
@@ -417,6 +436,9 @@ async function processGames() {
     const homeTeamStats = boxScore?.TeamStats.find((s) =>
       isHomeTeam ? s.TEAM_ID === teamId : s.TEAM_ID !== teamId,
     );
+    const homeTeamStatsMisc = boxScoreMisc?.sqlTeamsMisc.find(
+      (s) => s.TEAM_ID === teamId,
+    );
     const homeTeamPlayerStats = boxScore?.PlayerStats.filter((s) =>
       isHomeTeam ? s.TEAM_ID === teamId : s.TEAM_ID !== teamId,
     );
@@ -433,6 +455,9 @@ async function processGames() {
 
     const awayTeamStats = boxScore?.TeamStats.find((s) =>
       isHomeTeam ? s.TEAM_ID !== teamId : s.TEAM_ID === teamId,
+    );
+    const awayTeamStatsMisc = boxScoreMisc?.sqlTeamsMisc.find(
+      (s) => s.TEAM_ID !== teamId,
     );
     const awayTeamPlayerStats = boxScore?.PlayerStats.filter((s) =>
       isHomeTeam ? s.TEAM_ID !== teamId : s.TEAM_ID === teamId,
@@ -455,7 +480,17 @@ async function processGames() {
         {
           GAME_ID: gameId,
           TEAM_ID: homeTeamStats!.TEAM_ID,
-          teamStats: homeTeamStats!,
+          teamStats: {
+            ...homeTeamStats!,
+            FB_PTS: (homeTeamStatsMisc?.PTS_FB as unknown as number[])[0],
+            PITP: (homeTeamStatsMisc?.PTS_PAINT as unknown as number[])[0],
+            SECOND_CHANCE_PTS: (
+              homeTeamStatsMisc?.PTS_2ND_CHANCE as unknown as number[]
+            )[0],
+            PTS_OFF_TO: (
+              homeTeamStatsMisc?.PTS_OFF_TOV as unknown as number[]
+            )[0],
+          },
           playerStats: homeTeamPlayerStats!,
           startersStats: homeTeamStartersStats!,
           benchStats: homeTeamBenchStats!,
@@ -463,7 +498,17 @@ async function processGames() {
         {
           GAME_ID: gameId,
           TEAM_ID: awayTeamStats!.TEAM_ID,
-          teamStats: awayTeamStats!,
+          teamStats: {
+            ...awayTeamStats!,
+            FB_PTS: (awayTeamStatsMisc?.PTS_FB as unknown as number[])[0],
+            PITP: (awayTeamStatsMisc?.PTS_PAINT as unknown as number[])[0],
+            SECOND_CHANCE_PTS: (
+              awayTeamStatsMisc?.PTS_2ND_CHANCE as unknown as number[]
+            )[0],
+            PTS_OFF_TO: (
+              awayTeamStatsMisc?.PTS_OFF_TOV as unknown as number[]
+            )[0],
+          },
           playerStats: awayTeamPlayerStats!,
           startersStats: awayTeamStartersStats!,
           benchStats: awayTeamBenchStats!,
